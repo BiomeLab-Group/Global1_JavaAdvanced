@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,12 +39,15 @@ public class ConjuntoPropriedadesAtual {
     @Column(name = "id_conj_props_atual")
     private Long idConjuntoPropriedadesAtual;
 
+    @NotNull
     @Column(name = "vl_temperatura", nullable = false, precision = 20, scale = 5)
     private BigDecimal temperatura;
 
+    @NotNull
     @Column(name = "vl_umidade", nullable = false, precision = 60, scale = 2)
     private BigDecimal umidade;
 
+    @NotNull
     @Column(name = "vl_luminosidade", nullable = false, precision = 17, scale = 5)
     private BigDecimal luminosidade;
 

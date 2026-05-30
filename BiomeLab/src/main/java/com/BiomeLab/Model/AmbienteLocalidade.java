@@ -24,19 +24,21 @@ public class AmbienteLocalidade {
     @EmbeddedId
     private ChaveComposta_AmbienteLocalidade chaveComposta;
 
-    @ManyToOne(fetch = FetchType.LAZY) // traz apenas ids, sem objetos completos
+    @ManyToOne(fetch = FetchType.LAZY) 
     @MapsId("fkLocalidade")
     @JoinColumn(
-        name = "fk_localidade",
-        foreignKey = @ForeignKey(name = "fk_ambloc_localidade")
-    )
+    	    name = "fk_localidade",
+    	    nullable = false,
+    	    foreignKey = @ForeignKey(name = "fk_ambloc_localidade")
+    	)
     private Localidade localidade;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("fkAmbiente")
     @JoinColumn(
-        name = "fk_ambiente",
-        foreignKey = @ForeignKey(name = "fk_ambloc_ambiente")
-    )
+    	    name = "fk_ambiente",
+    	    nullable = false,
+    	    foreignKey = @ForeignKey(name = "fk_ambloc_ambiente")
+    	)
     private Ambiente ambiente;
 }

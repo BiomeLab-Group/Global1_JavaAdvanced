@@ -11,11 +11,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Entity
 @Table(name = "T_BIOMELAB_TESTE")
 @Data
@@ -29,6 +30,7 @@ public class Teste {
     @Column(name = "id_teste")
     private Long idTeste;
 
+    @Size(max = 100)
     @Column(name = "nm_teste", length = 100)
     private String nomeTeste;
 
@@ -38,12 +40,15 @@ public class Teste {
     @Column(name = "dt_termino_teste")
     private LocalDate dataTerminoTeste;
 
+    @Size(max = 4000)
     @Column(name = "obs_gerais", length = 4000)
     private String observacoesGerais;
 
+    @Size(max = 4000)
     @Column(name = "conclusao", length = 4000)
     private String conclusao;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(
         name = "fk_estudo",
@@ -51,5 +56,4 @@ public class Teste {
         foreignKey = @ForeignKey(name = "fk_teste_estudo")
     )
     private Estudo estudo;
-
 }

@@ -11,6 +11,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,15 +32,19 @@ public class Ambiente {
     @Column(name = "id_ambiente")
     private Long idAmbiente;
 
+    @NotBlank
+    @Size(max = 100)
     @Column(name = "nm_ambiente", nullable = false, length = 100)
     private String nomeAmbiente;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "st_visibilidade", nullable = false, length = 1)
-    private VisibilidadeEnum statusVisibilidade;
+    private VisibilidadeEnum visibilidade;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "st_ativo", length = 7)
-    private String statusAtivo;
+    private StatusAtivoEnum statusAtivo;
 
     @ManyToOne
     @JoinColumn(
