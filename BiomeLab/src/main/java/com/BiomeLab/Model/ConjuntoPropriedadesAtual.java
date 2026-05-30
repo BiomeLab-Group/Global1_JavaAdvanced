@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Entity
 @Table(
     name = "T_BIOMELAB_CONJ_PROPS_ATUAL",
@@ -44,7 +43,7 @@ public class ConjuntoPropriedadesAtual {
     private BigDecimal temperatura;
 
     @NotNull
-    @Column(name = "vl_umidade", nullable = false, precision = 60, scale = 2)
+    @Column(name = "vl_umidade", nullable = false, precision = 5, scale = 2)
     private BigDecimal umidade;
 
     @NotNull
@@ -57,6 +56,7 @@ public class ConjuntoPropriedadesAtual {
     @Column(name = "pressao_atmosferica", precision = 15, scale = 2)
     private BigDecimal pressaoAtmosferica;
 
+    @NotNull
     @OneToOne
     @JoinColumn(
         name = "fk_ambiente",
@@ -64,5 +64,4 @@ public class ConjuntoPropriedadesAtual {
         foreignKey = @ForeignKey(name = "fk_props_atual_ambiente")
     )
     private Ambiente ambiente;
-
 }

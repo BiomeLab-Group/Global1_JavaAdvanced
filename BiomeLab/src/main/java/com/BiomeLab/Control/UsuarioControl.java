@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.BiomeLab.Mapper.UsuarioMapper;
 import com.BiomeLab.Model.Usuario;
 import com.BiomeLab.Repository.UsuarioRepository;
 
@@ -27,8 +27,8 @@ public class UsuarioControl {
 	@Autowired
 	private UsuarioRepository repUsuario;
 	
-	@Autowired
-	private UsuarioMapper mapper;
+//	@Autowired
+//	private UsuarioMapper mapper;
 	
 	
 	@GetMapping(value = "/todos")
@@ -54,25 +54,25 @@ public class UsuarioControl {
 	
 	
 	@PostMapping(value = "/criar-usuario")
-	public ResponseEntity<Usuario> criarUsuario(@RequestBody @Valid Usuario usuario){
+	public ResponseEntity<Void> criarUsuario(@RequestBody @Valid Usuario usuario){
 		
 		
 		repUsuario.save(usuario);
 		
 		
-		return ResponseEntity.ok(usuario); 
+		return ResponseEntity.status(HttpStatus.CREATED).build();
 		
 	}
 	
 	@PutMapping(value = "/editar-usuario/{idUsuario}")
-	public ResponseEntity<Usuario> editarUsuario(@PathVariable Long idUsuario,@RequestBody @Valid Usuario usuario_atualizado){
+	public ResponseEntity<Void> editarUsuario(@PathVariable Long idUsuario,@RequestBody @Valid Usuario usuarioAtualizado){
 		
 		Optional<Usuario> op = repUsuario.findById(idUsuario);
 		
 		if (op.isPresent()) {
 			Usuario usuario = op.get();
 			
-			usuario.transferirUsuario(usuario_atualizado);
+			usuario.transferirUsuario(usuarioAtualizado);
 			repUsuario.save(usuario);
 			
 			return ResponseEntity.noContent().build();
@@ -85,11 +85,12 @@ public class UsuarioControl {
 	
 	
 	@DeleteMapping(value = "/remover-usuario/{idUsuario}")
-	public ResponseEntity<Usuario> removerUsuario(@PathVariable Long idUsuario){
+	public ResponseEntity<Void> removerUsuario(@PathVariable Long idUsuario){
 		
 		Optional<Usuario> op = repUsuario.findById(idUsuario);
 		
 		if (op.isPresent()) {
+			repUsuario.deleteById(idUsuario);
 			return ResponseEntity.noContent().build();
 		}
 		return ResponseEntity.notFound().build();

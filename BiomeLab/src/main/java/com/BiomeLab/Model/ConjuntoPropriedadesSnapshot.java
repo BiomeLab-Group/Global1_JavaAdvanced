@@ -44,7 +44,7 @@ public class ConjuntoPropriedadesSnapshot {
     private BigDecimal temperatura;
 
     @NotNull
-    @Column(name = "vl_umidade", nullable = false, precision = 60, scale = 2)
+    @Column(name = "vl_umidade", nullable = false, precision = 5, scale = 2)
     private BigDecimal umidade;
 
     @NotNull
