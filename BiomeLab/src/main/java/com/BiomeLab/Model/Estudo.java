@@ -34,7 +34,7 @@ public class Estudo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_estudo")
-    private Integer idEstudo;
+    private Long idEstudo;
 
     @Column(name = "nm_estudo", nullable = false, length = 50)
     private String nomeEstudo;

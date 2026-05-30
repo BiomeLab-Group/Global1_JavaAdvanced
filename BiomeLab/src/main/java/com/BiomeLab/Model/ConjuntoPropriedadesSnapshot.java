@@ -36,7 +36,7 @@ public class ConjuntoPropriedadesSnapshot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_conj_props_snapshot")
-    private Integer idConjuntoPropriedadesSnapshot;
+    private Long idConjuntoPropriedadesSnapshot;
 
     @Column(name = "vl_temperatura", nullable = false, precision = 20, scale = 5)
     private BigDecimal temperatura;

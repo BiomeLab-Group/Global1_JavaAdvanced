@@ -17,9 +17,9 @@ public class ChaveComposta_AmbienteLocalidade implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Column(name = "fk_localidade")
-    private Integer fkLocalidade;
+    private Long fkLocalidade;
 
     @Column(name = "fk_ambiente")
-    private Integer fkAmbiente;
+    private Long fkAmbiente;
 
 }
