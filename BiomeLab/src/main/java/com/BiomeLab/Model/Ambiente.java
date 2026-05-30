@@ -2,6 +2,8 @@ package com.BiomeLab.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,8 +32,9 @@ public class Ambiente {
     @Column(name = "nm_ambiente", nullable = false, length = 100)
     private String nomeAmbiente;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "st_visibilidade", nullable = false, length = 1)
-    private String statusVisibilidade;
+    private VisibilidadeEnum statusVisibilidade;
 
     @Column(name = "st_ativo", length = 7)
     private String statusAtivo;
