@@ -56,4 +56,14 @@ public class Teste {
         foreignKey = @ForeignKey(name = "fk_teste_estudo")
     )
     private Estudo estudo;
+
+
+    public void transferirTeste(Teste testeAtualizado) {
+        this.nomeTeste = testeAtualizado.getNomeTeste();
+        this.dataInicioTeste = testeAtualizado.getDataInicioTeste();
+        this.dataTerminoTeste = testeAtualizado.getDataTerminoTeste();
+        this.observacoesGerais = testeAtualizado.getObservacoesGerais();
+        this.conclusao = testeAtualizado.getConclusao();
+        this.estudo = testeAtualizado.getEstudo();
+    }
 }

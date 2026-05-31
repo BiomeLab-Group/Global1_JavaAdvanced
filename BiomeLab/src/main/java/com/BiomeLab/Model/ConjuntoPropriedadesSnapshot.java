@@ -65,4 +65,16 @@ public class ConjuntoPropriedadesSnapshot {
         foreignKey = @ForeignKey(name = "fk_snapshot_teste")
     )
     private Teste teste;
+
+    
+    public void transferirConjuntoPropriedadesSnapshot(
+            ConjuntoPropriedadesSnapshot atualizado) {
+
+        this.temperatura = atualizado.getTemperatura();
+        this.umidade = atualizado.getUmidade();
+        this.luminosidade = atualizado.getLuminosidade();
+        this.gravidade = atualizado.getGravidade();
+        this.pressaoAtmosferica = atualizado.getPressaoAtmosferica();
+        this.teste = atualizado.getTeste();
+    }
 }

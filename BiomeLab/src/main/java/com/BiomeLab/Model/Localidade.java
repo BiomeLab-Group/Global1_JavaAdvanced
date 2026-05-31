@@ -38,5 +38,12 @@ public class Localidade {
     @Size(max = 30)
     @Column(name = "pais", length = 30)
     private String pais;
+    
+    
+    public void transferirLocalidade(Localidade localidadeAtualizada) {
+        this.nomePlaneta = localidadeAtualizada.getNomePlaneta();
+        this.continente = localidadeAtualizada.getContinente();
+        this.pais = localidadeAtualizada.getPais();
+    }
 
 }

@@ -56,5 +56,12 @@ public class Estudo {
         foreignKey = @ForeignKey(name = "fk_estudo_ambiente")
     )
     private Ambiente ambiente;
+    
+    
+    public void transferirEstudo(Estudo estudoAtualizado) {
+        this.nomeEstudo = estudoAtualizado.getNomeEstudo();
+        this.descricaoEstudo = estudoAtualizado.getDescricaoEstudo();
+        this.ambiente = estudoAtualizado.getAmbiente();
+    }
 
 }

@@ -64,4 +64,17 @@ public class ConjuntoPropriedadesAtual {
         foreignKey = @ForeignKey(name = "fk_props_atual_ambiente")
     )
     private Ambiente ambiente;
+
+
+    public void transferirConjuntoPropriedadesAtual(
+            ConjuntoPropriedadesAtual atualizado) {
+
+        this.temperatura = atualizado.getTemperatura();
+        this.umidade = atualizado.getUmidade();
+        this.luminosidade = atualizado.getLuminosidade();
+        this.gravidade = atualizado.getGravidade();
+        this.pressaoAtmosferica = atualizado.getPressaoAtmosferica();
+        this.ambiente = atualizado.getAmbiente();
+    }
+
 }

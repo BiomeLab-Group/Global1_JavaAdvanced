@@ -53,4 +53,11 @@ public class Ambiente {
     )
     private Usuario usuario;
 
+    
+    public void transferirAmbiente(Ambiente ambienteAtualizado) {
+        this.nomeAmbiente = ambienteAtualizado.getNomeAmbiente();
+        this.visibilidade = ambienteAtualizado.getVisibilidade();
+        this.statusAtivo = ambienteAtualizado.getStatusAtivo();
+        this.usuario = ambienteAtualizado.getUsuario();
+    }
 }
