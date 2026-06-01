@@ -64,6 +64,7 @@ public class UsuarioController {
 		
 	}
 	
+	// O usuario Pode apenas modificar nome e email 
 	@PutMapping(value = "/editar-usuario/{idUsuario}")
 	public ResponseEntity<Void> editarUsuario(@PathVariable Long idUsuario,@RequestBody @Valid Usuario usuarioAtualizado){
 		
@@ -72,8 +73,9 @@ public class UsuarioController {
 		if (op.isPresent()) {
 			Usuario usuario = op.get();
 			
-			usuario.transferirUsuario(usuarioAtualizado);
-			repUsuario.save(usuario);
+			usuario.setEmail(usuarioAtualizado.getEmail());
+			usuario.setNomeUsuario(usuarioAtualizado.getNomeUsuario());
+			repUsuario.save(usuarioAtualizado);
 			
 			return ResponseEntity.noContent().build();
 			
@@ -81,6 +83,23 @@ public class UsuarioController {
 		
 			return ResponseEntity.notFound().build();
 		}
+	}
+	
+	// Apenas para testes
+	@PutMapping(value = "/editar-usuario-completo/{idUsuario}")
+	public ResponseEntity<Void> editarUsuarioCompleto(
+	        @PathVariable Long idUsuario,
+	        @RequestBody @Valid Usuario usuarioAtualizado){
+
+	    Optional<Usuario> op = repUsuario.findById(idUsuario);
+
+	    if (op.isPresent()) {
+	        Usuario usuario = op.get();
+	        usuario.transferirUsuario(usuarioAtualizado);
+	        repUsuario.save(usuario);
+	        return ResponseEntity.noContent().build();
+	    }
+	    return ResponseEntity.notFound().build();
 	}
 	
 	

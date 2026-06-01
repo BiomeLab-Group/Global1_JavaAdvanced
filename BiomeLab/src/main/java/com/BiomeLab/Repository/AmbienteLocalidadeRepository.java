@@ -17,7 +17,7 @@ public interface AmbienteLocalidadeRepository extends JpaRepository<AmbienteLoca
 	//----------------------------------------------------------------------------------
 	//---------------------- PESQUISA DE TODOS AMBIENTES (PUBLICOS E PRIVADOS(de acordo com o id do usuario))
 	
-	//------ POR SUBSTRING
+	//------ POR SUBSTRING // adicionar campo de nome do ambiente
 	@Query(
 			nativeQuery = true,
 			value =  "SELECT DISTINCT a.* "

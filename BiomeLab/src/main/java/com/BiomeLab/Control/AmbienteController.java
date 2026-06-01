@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.BiomeLab.Model.Ambiente;
+import com.BiomeLab.Model.StatusAtivoEnum;
 import com.BiomeLab.Repository.AmbienteRepository;
 
 import jakarta.validation.Valid;
@@ -47,16 +48,72 @@ public class AmbienteController {
         return ResponseEntity.notFound().build();
     }
     
-    @GetMapping(value = "/{idUsuario}/ambientes")
-    public ResponseEntity<List<Ambiente>> retornarAmbientePrivados(@PathVariable Long idUsuario){
+    @GetMapping(value = "/usuario/{idUsuario}/ambientes")
+    public ResponseEntity<List<Ambiente>> retornarAmbientePrivadosPorUsuario(@PathVariable Long idUsuario){
     	
     	List<Ambiente> ambientes = repAmbiente.listarAmbientesPrivadosPorUsuario(idUsuario);
     	
     	return ResponseEntity.ok(ambientes);
     }
 
+    @PutMapping("/usuario/{idUsuario}/ambiente/{idAmbiente}/ativarAmbiente")
+    public ResponseEntity<Void> ativarAmbiente(
+            @PathVariable Long idUsuario,
+            @PathVariable Long idAmbiente){
+    	
+    	Optional<Ambiente> op = repAmbiente.retornaAmbienteAtivo(idUsuario);
+    	
+    	if(op.isPresent()) {
+    		Ambiente ambienteInativado = op.get();
+    	
+    		ambienteInativado.setStatusAtivo(StatusAtivoEnum.INATIVO);
+    		repAmbiente.save(ambienteInativado);
+    	}
+    	
+    	//---------- ATIVAR NOVO AMBIENTE
+    	
+    	Optional<Ambiente> op2 =
+    	        repAmbiente.ativarAmbiente(idUsuario, idAmbiente);
+    	
+    	//ATIVANDO O NOVO
+    	if (op2.isPresent()) {
+			Ambiente ambiente_novo = op2.get();
+			ambiente_novo.setStatusAtivo(StatusAtivoEnum.ATIVO);
+			repAmbiente.save(ambiente_novo);
+			return ResponseEntity.ok().build();
+		}
+    		
+    	
+    	return ResponseEntity.notFound().build();
+    	
+    }    
+    
+    @PutMapping(value = "/usuario/{idUsuario}/ambiente/{idAmbiente}/desativarAmbiente")
+    public ResponseEntity<Void> desativarAmbienteAtivo(
+            @PathVariable Long idUsuario,
+            @PathVariable Long idAmbiente){
+
+        Optional<Ambiente> op =
+                repAmbiente.buscarAmbienteAtivo(idUsuario,idAmbiente);
+
+        if (op.isPresent()) {
+
+            Ambiente ambiente = op.get();
+
+            ambiente.setStatusAtivo(StatusAtivoEnum.INATIVO);
+
+            repAmbiente.save(ambiente);
+
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.notFound().build();
+    }    
+    
     @PostMapping(value = "/criar-ambiente")
     public ResponseEntity<Void> criarAmbiente(@RequestBody @Valid Ambiente ambiente) {
+    	
+    	 
 
         repAmbiente.save(ambiente);
 
@@ -99,4 +156,4 @@ public class AmbienteController {
         return ResponseEntity.notFound().build();
     }
 
-}
+} 
