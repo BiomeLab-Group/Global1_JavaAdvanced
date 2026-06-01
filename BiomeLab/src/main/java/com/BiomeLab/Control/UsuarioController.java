@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.BiomeLab.DTO.UsuarioDTO;
 import com.BiomeLab.Model.Usuario;
 import com.BiomeLab.Repository.UsuarioRepository;
 
@@ -52,6 +53,30 @@ public class UsuarioController {
 		return ResponseEntity.notFound().build();
 	}
 	
+	@GetMapping("/{idUsuario}/dados-pessoais")
+	public ResponseEntity<UsuarioDTO> retornarDadosUsuario(
+	        @PathVariable Long idUsuario){
+
+	    Optional<Usuario> op = repUsuario.findById(idUsuario);
+
+	    if(op.isPresent()){
+
+	        Usuario usuario = op.get();
+
+	        UsuarioDTO dto = new UsuarioDTO(
+	                usuario.getNomeUsuario(),
+	                usuario.getDataNascimento(),
+	                usuario.getEmail()
+	        );
+
+	        return ResponseEntity.ok(dto);
+	    }
+
+	    return ResponseEntity.notFound().build();
+	}
+	
+	
+	
 	
 	@PostMapping(value = "/criar-usuario")
 	public ResponseEntity<Void> criarUsuario(@RequestBody @Valid Usuario usuario){
@@ -63,6 +88,8 @@ public class UsuarioController {
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 		
 	}
+	
+	
 	
 	// O usuario Pode apenas modificar nome e email 
 	@PutMapping(value = "/editar-usuario/{idUsuario}")
