@@ -47,6 +47,22 @@ public class TesteController {
 
         return ResponseEntity.notFound().build();
     }
+    
+    @GetMapping("/estudo/{idEstudo}/ambiente/{idAmbiente}/usuario/{idUsuario}")
+    public ResponseEntity<List<Teste>> retornarTestesPorEstudoPorAmbientePorUsuario(
+            @PathVariable Long idEstudo,
+            @PathVariable Long idAmbiente,
+            @PathVariable Long idUsuario
+            ){
+
+        List<Teste> testes = repTeste.retornarTestesPorEstudoPorAmbientePorUsuario(idEstudo, idAmbiente, idUsuario);
+
+        if (testes.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(testes);
+    }
+    
 
     @PostMapping(value = "/criar-teste")
     public ResponseEntity<Void> criarTeste(

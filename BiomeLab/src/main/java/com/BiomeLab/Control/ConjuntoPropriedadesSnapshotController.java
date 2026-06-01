@@ -50,6 +50,23 @@ public class ConjuntoPropriedadesSnapshotController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/teste/{idTeste}/estudo/{idEstudo}/ambiente/{idAmbiente}/usuario/{idUsuario}")
+    public ResponseEntity<ConjuntoPropriedadesSnapshot> retornaPropsSnapshotPorTesteEEstudoEAmbienteEUsuario(
+            @PathVariable Long idTeste,
+            @PathVariable Long idEstudo,
+            @PathVariable Long idAmbiente,
+            @PathVariable Long idUsuario
+            ){
+
+        Optional<ConjuntoPropriedadesSnapshot> op = repConjuntoPropriedadesSnapshot.retornaPropsSnapshotPorTesteEEstudoEAmbienteEUsuario(idTeste, idEstudo, idAmbiente, idUsuario);
+
+        if (op.isPresent()) {
+            return ResponseEntity.ok(op.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
+    
     @PostMapping(value = "/criar")
     public ResponseEntity<Void> criar(
             @RequestBody @Valid ConjuntoPropriedadesSnapshot conjunto) {

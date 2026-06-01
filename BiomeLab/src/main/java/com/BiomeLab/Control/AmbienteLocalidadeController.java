@@ -56,7 +56,26 @@ public class AmbienteLocalidadeController {
 	};
 	
 	
+	@GetMapping(value="/localidades")
+	public ResponseEntity<List<Ambiente>> buscarAmbientesPublicosPorLocalidadeMapeada (
+	        @RequestParam(name = "planeta", required = false) Optional<String> planeta,
+	        @RequestParam(name = "continente", required = false) Optional<String> continente,
+	        @RequestParam(name = "pais", required = false) Optional<String> pais
+	        )
+	{
+	    List<Ambiente> listaAmbientes = repAmbLoc.listarAmbientesPublicosPorLocalidadeMapeada(planeta, continente, pais);
+	    return ResponseEntity.ok(listaAmbientes);
+	}
+
 	
+	@GetMapping(value="/localidades/pesquisa")
+	public ResponseEntity<List<Ambiente>> buscarAmbientesPublicosPorLocalidadePorSubstring (
+	        @RequestParam(name = "substring", required = false, defaultValue = "") String substring
+	        )
+	{
+	    List<Ambiente> listaAmbientes = repAmbLoc.listarAmbientesPublicosPorLocalidadePorSubstring(substring);
+	    return ResponseEntity.ok(listaAmbientes);
+	}
 	
 
 }

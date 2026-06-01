@@ -46,6 +46,14 @@ public class AmbienteController {
 
         return ResponseEntity.notFound().build();
     }
+    
+    @GetMapping(value = "/{idUsuario}/ambientes")
+    public ResponseEntity<List<Ambiente>> retornarAmbientePrivados(@PathVariable Long idUsuario){
+    	
+    	List<Ambiente> ambientes = repAmbiente.listarAmbientesPrivadosPorUsuario(idUsuario);
+    	
+    	return ResponseEntity.ok(ambientes);
+    }
 
     @PostMapping(value = "/criar-ambiente")
     public ResponseEntity<Void> criarAmbiente(@RequestBody @Valid Ambiente ambiente) {

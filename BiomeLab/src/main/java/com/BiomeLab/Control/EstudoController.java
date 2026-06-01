@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.BiomeLab.Model.ConjuntoPropriedadesAtual;
 import com.BiomeLab.Model.Estudo;
 import com.BiomeLab.Repository.EstudoRepository;
 
@@ -47,6 +48,21 @@ public class EstudoController {
 
         return ResponseEntity.notFound().build();
     }
+    
+    
+    @GetMapping(value = "/ambiente/{idAmbiente}/usuario/{idUsuario}")
+    public ResponseEntity<Estudo> retornarEstudoPorAmbienteEUsuario(
+    		@PathVariable("idUsuario") Long idUsuario,
+    		@PathVariable("idAmbiente") Long idAmbiente
+    		){
+    	
+    	Optional<Estudo> op = repEstudo.retornaEstudoPorAmbientePorUsuario(idUsuario,idAmbiente);
+    	
+        if (op.isPresent()) {
+        	return ResponseEntity.ok(op.get());
+        }
+    	return ResponseEntity.notFound().build();
+    };
 
     @PostMapping(value = "/criar-estudo")
     public ResponseEntity<Void> criarEstudo(

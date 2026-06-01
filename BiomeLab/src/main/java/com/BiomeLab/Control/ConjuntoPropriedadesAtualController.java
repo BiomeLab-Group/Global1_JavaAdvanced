@@ -36,6 +36,7 @@ public class ConjuntoPropriedadesAtualController {
         return ResponseEntity.ok(conjuntos);
     }
 
+    
     @GetMapping(value = "/{idConjunto}")
     public ResponseEntity<ConjuntoPropriedadesAtual> retornarPorId(
             @PathVariable Long idConjunto) {
@@ -49,7 +50,23 @@ public class ConjuntoPropriedadesAtualController {
 
         return ResponseEntity.notFound().build();
     }
-
+    
+    
+    @GetMapping(value = "/ambiente/{idAmbiente}/usuario/{idUsuario}")
+    public ResponseEntity<ConjuntoPropriedadesAtual> retornarConjuntoPorAmbienteEUsuario(
+    		@PathVariable("idUsuario") Long idUsuario,
+    		@PathVariable("idAmbiente") Long idAmbiente
+    		){
+    	
+    	Optional<ConjuntoPropriedadesAtual> op = repConjuntoPropriedadesAtual.retornaPropsAtuaisPorAmbientePorUsuario(idUsuario,idAmbiente);
+    	
+        if (op.isPresent()) {
+        	return ResponseEntity.ok(op.get());
+        }
+    	return ResponseEntity.notFound().build();
+    }
+    
+    
     @PostMapping(value = "/criar")
     public ResponseEntity<Void> criar(
             @RequestBody @Valid ConjuntoPropriedadesAtual conjunto) {
@@ -59,6 +76,7 @@ public class ConjuntoPropriedadesAtualController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    
     @PutMapping(value = "/editar/{idConjunto}")
     public ResponseEntity<Void> editar(
             @PathVariable Long idConjunto,
