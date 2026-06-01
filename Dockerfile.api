@@ -1,0 +1,17 @@
+# Estágio 1: Build com Maven
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Estágio 2: Imagem enxuta para execução
+FROM eclipse-temurin:21-jre-alpine
+RUN addgroup -S biomeappuser && adduser -S -G biomeappuser biomeappuser
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+RUN chown biomeappuser:biomeappuser app.jar
+USER biomeappuser
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
