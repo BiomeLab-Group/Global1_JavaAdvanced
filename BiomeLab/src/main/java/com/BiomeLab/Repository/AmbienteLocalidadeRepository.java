@@ -1,6 +1,7 @@
 package com.BiomeLab.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -48,19 +49,19 @@ public interface AmbienteLocalidadeRepository extends JpaRepository<AmbienteLoca
 		          + "INNER JOIN T_BIOMELAB_AMBIENTE a ON al.fk_ambiente = a.id_ambiente "
 		          + "INNER JOIN T_BIOMELAB_LOCALIDADE l ON al.fk_localidade = l.id_localidade "
 		          + "WHERE ("
-		          + "	 (l.nm_planeta = :planeta OR :planeta IS NULL) "
-		          + "AND (l.continente = :continente OR :continente IS NULL) "
-		          + "AND (l.pais = :pais OR :pais IS NULL) "
+		          + "	 (UPPER(l.nm_planeta) = UPPER(:planeta) OR :planeta IS NULL) "
+		          + "AND (UPPER(l.continente) = UPPER(:continente) OR :continente IS NULL) "
+		          + "AND (UPPER(l.pais) = UPPER(:pais) OR :pais IS NULL) "
 		          + ") AND ("
 		          + "    a.fk_usuario = :idUsuario "
 		          + " OR a.fk_usuario IS NULL "
 		          + ") "
 		          + "ORDER BY a.nm_ambiente ASC"
 		)
-		public List<Ambiente> listarTodosAmbientesPorLocalidadeMapeada(
-		    @Param("planeta") String planeta,
-		    @Param("continente") String continente,
-		    @Param("pais") String pais,
+		public List<Ambiente> listarTodosAmbientesPorLocalidadeMapeadaPorUsuario(
+		    @Param("planeta") Optional<String> planeta,
+		    @Param("continente") Optional<String> continente,
+		    @Param("pais") Optional<String> pais,
 		    @Param("idUsuario") Long idUsuario
 		);
 	
@@ -102,9 +103,9 @@ public interface AmbienteLocalidadeRepository extends JpaRepository<AmbienteLoca
 			          + "ORDER BY a.nm_ambiente ASC"
 			)
 			public List<Ambiente> listarAmbientesPublicosPorLocalidadeMapeada(
-			    @Param("planeta") String planeta,
-			    @Param("continente") String continente,
-			    @Param("pais") String pais
+				    @Param("planeta") Optional<String> planeta,
+				    @Param("continente") Optional<String> continente,
+				    @Param("pais") Optional<String> pais
 			);
 	
 	
