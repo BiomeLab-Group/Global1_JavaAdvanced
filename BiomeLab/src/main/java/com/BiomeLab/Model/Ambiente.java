@@ -48,7 +48,7 @@ public class Ambiente {
 
     @ManyToOne
     @JoinColumn(
-        name = "fk_usuario",
+        name = "fk_usuario",nullable = true,
         foreignKey = @ForeignKey(name = "fk_ambiente_usuario")
     )
     private Usuario usuario;

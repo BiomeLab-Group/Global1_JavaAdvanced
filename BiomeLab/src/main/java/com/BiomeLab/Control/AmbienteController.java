@@ -1,6 +1,7 @@
 package com.BiomeLab.Control;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,7 @@ import com.BiomeLab.Model.Teste;
 import com.BiomeLab.Model.Usuario;
 import com.BiomeLab.Model.VisibilidadeEnum;
 import com.BiomeLab.Record.CriarAmbienteDTO;
+import com.BiomeLab.Record.EditarAmbienteDTO;
 import com.BiomeLab.Repository.AmbienteRepository;
 import com.BiomeLab.Repository.ConjuntoPropriedadesAtualRepository;
 import com.BiomeLab.Repository.ConjuntoPropriedadesSnapshotRepository;
@@ -91,7 +93,7 @@ public class AmbienteController {
         
         if (ambiente.getVisibilidade() == VisibilidadeEnum.R) {
         	
-        	if (ambiente.getUsuario().getIdUsuario() != usuario.getIdUsuario()) {
+        	if (!ambiente.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 //Ambiente não pertence ao usuario
             }
@@ -134,8 +136,9 @@ public class AmbienteController {
     }
     
     // NA ficha de ambiente inativo
+    @Transactional
     @PutMapping("/usuario/{idUsuario}/ambiente/{idAmbiente}/ativarAmbiente")
-    public ResponseEntity<Ambiente> ativarAmbiente(
+    public ResponseEntity<Void> ativarAmbiente(
             @PathVariable Long idUsuario,
             @PathVariable Long idAmbiente){
     	
@@ -167,6 +170,7 @@ public class AmbienteController {
     }    
     
     // na ficha de ambiente ativo
+    @Transactional
     @PutMapping(value = "/usuario/{idUsuario}/ambiente/{idAmbiente}/desativarAmbiente")
     public ResponseEntity<Void> desativarAmbienteAtivo(
             @PathVariable Long idUsuario,
@@ -286,7 +290,7 @@ public class AmbienteController {
 
         Optional<Usuario> op_usuario = repUsuario.findById(idUsuario);
         if (op_usuario.isEmpty()) {
-        	 ResponseEntity.notFound().build();
+        	 return ResponseEntity.notFound().build();
 		}
         Usuario usuario = op_usuario.get();
 
@@ -360,16 +364,16 @@ public class AmbienteController {
     public ResponseEntity<Void> editarAmbiente(
             @PathVariable Long idUsuario,
             @PathVariable Long idAmbiente,
-            @RequestBody @Valid Ambiente ambienteAtualizado) {
+            @RequestBody @Valid EditarAmbienteDTO ambienteAtualizadoDto) {
 
-        Optional<Ambiente> op_ambiente_pub = repAmbiente.findById(idAmbiente);
-        if (op_ambiente_pub.isEmpty()) {
+        Optional<Ambiente> op_ambiente_pri = repAmbiente.findById(idAmbiente);
+        if (op_ambiente_pri.isEmpty()) {
         	return ResponseEntity.notFound().build();
         	// AMBIENTE PRIVADO NÃO ENCONTRADO
         }
-        Ambiente ambiente = op_ambiente_pub.get();
+        Ambiente ambiente = op_ambiente_pri.get();
         
-        if (ambiente.getUsuario().getIdUsuario() != idUsuario) {
+        if (!ambiente.getUsuario().getIdUsuario().equals(idUsuario)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             // AMBIENTE NÃO PERTENCE A ESSE USUARIO
         }
@@ -384,7 +388,7 @@ public class AmbienteController {
         }
         
         
-        ambiente.setNomeAmbiente(ambienteAtualizado.getNomeAmbiente());
+        ambiente.setNomeAmbiente(ambienteAtualizadoDto.nomeAmbiente());
 
         repAmbiente.save(ambiente);
 
@@ -408,8 +412,8 @@ public class AmbienteController {
     	Long idAmbienteApagar=null;
     	Long idPropsAtualApagar=null;
     	Long idEstudoApagar=null;
-    	Long idTesteApagar=null;
-    	Long idPropsSnapshotApagar=null;
+    	List<Long> idsTestesApagar = new ArrayList<>();
+    	List<Long> idsPropsSnapshotsApagar = new ArrayList<>();
     	
         Optional<Ambiente> op_ambiente = repAmbiente.findById(idAmbiente);
         
@@ -428,13 +432,39 @@ public class AmbienteController {
         idPropsAtualApagar = conjuntoPropriedadesAtual.getIdConjuntoPropriedadesAtual();
         
 
-        //---------- Coletar o id do estudo para apagar
-        
-        
+      //---------- Coletar o id do estudo para apagar
+        Optional<Estudo> op_estudo = repEstudo.retornaEstudoPorAmbientePorUsuario(usuario.getIdUsuario(), idAmbienteApagar);
+        if(op_estudo.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Estudo estudo = op_estudo.get();
+        idEstudoApagar = estudo.getIdEstudo();
+
+
         //---------- Coletar o id do teste para apagar
+        List<Teste> testes = repTeste.retornarTestesPorEstudoPorAmbientePorUsuario(idEstudoApagar, idAmbienteApagar, idUsuario);
+
+
+        //---------- Coletar o id do conjunto props snapshot para apagar e deletar em ordem inversa
+        for(Teste teste : testes) {
+            idsTestesApagar.add(teste.getIdTeste());
+            
+            Optional<ConjuntoPropriedadesSnapshot> op_snapshot = repSnapshot.retornaPropsSnapshotPorTesteEEstudoEAmbienteEUsuario(
+                teste.getIdTeste(), idEstudoApagar, idAmbienteApagar, idUsuario);
+
+            if(op_snapshot.isPresent()) {
+                idsPropsSnapshotsApagar.add(op_snapshot.get().getIdConjuntoPropriedadesSnapshot());
+            }
+        }
         
-        
-      //---------- Coletar o id do conjunto props snapshot para apagar
+      //---------- Deletar em ordem inversa
+        idsPropsSnapshotsApagar.forEach(id -> repSnapshot.deleteById(id)); //lista
+        idsTestesApagar.forEach(id -> repTeste.deleteById(id)); // lista
+        repEstudo.deleteById(idEstudoApagar);
+        repConjuntoPropsAtual.deleteById(idPropsAtualApagar);
+        repAmbiente.deleteById(idAmbienteApagar);
+
+        return ResponseEntity.noContent().build();
     }
 
 } 

@@ -22,7 +22,7 @@ public interface AmbienteRepository extends JpaRepository<Ambiente, Long>{
 		    FROM Ambiente a
 		    WHERE a.usuario.idUsuario = :idUsuario
 		    AND a.idAmbiente = :idAmbiente
-		    AND a.statusAtivo = com.BiomeLab.Enum.StatusAtivoEnum.ATIVO
+		    AND a.statusAtivo = 'ATIVO'
 		""")
 		Optional<Ambiente> buscarAmbienteAtivo(
 		    @Param("idUsuario") Long idUsuario,
@@ -34,7 +34,7 @@ public interface AmbienteRepository extends JpaRepository<Ambiente, Long>{
 	@Query("""
 		    FROM Ambiente a
 		    WHERE a.usuario.idUsuario = :idUsuario
-		    AND a.statusAtivo = com.BiomeLab.Enum.StatusAtivoEnum.ATIVO
+		    AND a.statusAtivo = 'ATIVO'
 		""")
 		Optional<Ambiente> buscarAmbienteAtivoHome(
 		    @Param("idUsuario") Long idUsuario
@@ -46,7 +46,7 @@ public interface AmbienteRepository extends JpaRepository<Ambiente, Long>{
 		    WHERE a.usuario.idUsuario = :idUsuario
 		    AND a.idAmbiente = :idAmbiente
 		    AND a.visibilidade = 'R'
-		    AND a.statusAtivo = com.BiomeLab.Enum.StatusAtivoEnum.INATIVO
+		    AND a.statusAtivo = 'INATIVO'
 		""")
 		Optional<Ambiente> ativarAmbiente(
 		    @Param("idUsuario") Long idUsuario,
@@ -70,7 +70,7 @@ public interface AmbienteRepository extends JpaRepository<Ambiente, Long>{
 	@Query("""
 		    FROM Ambiente a
 		    WHERE a.usuario.idUsuario = :idUsuario
-		    AND a.statusAtivo = com.BiomeLab.Enum.StatusAtivoEnum.ATIVO
+		    AND a.statusAtivo = 'ATIVO'
 		""")
 		Optional<Ambiente> retornaAmbienteAtivo(
 		    @Param("idUsuario") Long idUsuario
