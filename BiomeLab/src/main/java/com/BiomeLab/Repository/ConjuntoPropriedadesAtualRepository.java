@@ -16,4 +16,10 @@ public interface ConjuntoPropriedadesAtualRepository extends JpaRepository<Conju
 			+ "cp.ambiente.usuario.idUsuario = :idUsuario ")
 	public Optional<ConjuntoPropriedadesAtual> retornaPropsAtuaisPorAmbientePorUsuario(@Param("idUsuario") Long idUsuario,@Param("idAmbiente") Long idAmbiente) ;
 
+	
+	@Query(value = "FROM ConjuntoPropriedadesAtual cp "
+			+ "Where cp.ambiente.idAmbiente = :idAmbiente ")
+	public Optional<ConjuntoPropriedadesAtual> retornaPropsAtuaisPorAmbiente(@Param("idAmbiente") Long idAmbiente) ;
+
+	
 }

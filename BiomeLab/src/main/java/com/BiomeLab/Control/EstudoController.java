@@ -63,6 +63,20 @@ public class EstudoController {
         }
     	return ResponseEntity.notFound().build();
     };
+    
+    
+    // Busca o Estudo do Ambiente Ativo
+    @GetMapping("/ativo/usuario/{idUsuario}")
+    public ResponseEntity<Estudo> retornarEstudoDoAmbienteAtivoPorUsuario(@PathVariable("idUsuario") Long idUsuario){
+    	
+    	Optional<Estudo> op = repEstudo.buscarEstudoDoAmbienteAtivo(idUsuario);
+
+        if (op.isPresent()) {
+            return ResponseEntity.ok(op.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
 
     @PostMapping(value = "/criar-estudo")
     public ResponseEntity<Void> criarEstudo(

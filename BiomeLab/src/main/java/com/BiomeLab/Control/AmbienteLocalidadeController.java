@@ -21,7 +21,7 @@ public class AmbienteLocalidadeController {
 	@Autowired
 	AmbienteLocalidadeRepository repAmbLoc;
 	
-	
+	//Desligado
 	@GetMapping(value="/{idUsuario}/localidades")
 	public ResponseEntity<List<Ambiente>> buscarTodosAmbientesPorLocalidadeMapeadaPorUsuario (
 			@RequestParam(name = "planeta",required = false) Optional<String> planeta,
@@ -46,16 +46,13 @@ public class AmbienteLocalidadeController {
 			)
 	{
 		
-
-		
-		
-		List<Ambiente> listaAmbientes = repAmbLoc.listarTodosAmbientesPorLocalidadePorSubstringPorUsuario(substring,idUsuario);
+		List<Ambiente> listaAmbientes = repAmbLoc.buscarTodosAmbientesPorSubstring(substring,idUsuario);
 		
 		
 		return ResponseEntity.ok(listaAmbientes);
 	};
 	
-	
+	//Desligado
 	@GetMapping(value="/localidades")
 	public ResponseEntity<List<Ambiente>> buscarAmbientesPublicosPorLocalidadeMapeada (
 	        @RequestParam(name = "planeta", required = false) Optional<String> planeta,
@@ -73,7 +70,7 @@ public class AmbienteLocalidadeController {
 	        @RequestParam(name = "substring", required = false, defaultValue = "") String substring
 	        )
 	{
-	    List<Ambiente> listaAmbientes = repAmbLoc.listarAmbientesPublicosPorLocalidadePorSubstring(substring);
+	    List<Ambiente> listaAmbientes = repAmbLoc.buscarAmbientesPublicosPorSubstring(substring);
 	    return ResponseEntity.ok(listaAmbientes);
 	}
 	

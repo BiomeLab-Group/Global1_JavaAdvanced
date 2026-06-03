@@ -19,24 +19,25 @@ public interface AmbienteLocalidadeRepository extends JpaRepository<AmbienteLoca
 	
 	//------ POR SUBSTRING // adicionar campo de nome do ambiente
 	@Query(
-			nativeQuery = true,
-			value =  "SELECT DISTINCT a.* "
-			          + "FROM AMBIENTE_LOCALIDADE al "
-			          + "INNER JOIN T_BIOMELAB_AMBIENTE a ON al.fk_ambiente = a.id_ambiente "
-			          + "INNER JOIN T_BIOMELAB_LOCALIDADE l ON al.fk_localidade = l.id_localidade "
-			          + "WHERE ( "
-			          + "    UPPER(l.nm_planeta) LIKE UPPER('%'||:substring||'%') "
-			          + " OR UPPER(l.continente) LIKE UPPER('%'||:substring||'%') "
-			          + " OR UPPER(l.pais) LIKE UPPER('%'||:substring||'%') "
-			          + ") "
-			          + "AND ( "
-			          + "    a.fk_usuario = :idUsuario "
-			          + " OR a.fk_usuario IS NULL "
-			          + ") "
-			          + "ORDER BY a.nm_ambiente ASC") 
-	public List<Ambiente> listarTodosAmbientesPorLocalidadePorSubstringPorUsuario(
-		@Param(value = "substring") String substring,
-		@Param(value="idUsuario") Long idUsuario
+		    nativeQuery = true,
+		    value = "SELECT DISTINCT a.* FROM T_BIOMELAB_AMBIENTE a "
+		          + "WHERE UPPER(a.nm_ambiente) LIKE UPPER('%'||:substring||'%') "
+		          + "AND (a.fk_usuario = :idUsuario OR a.fk_usuario IS NULL) "
+		          + "UNION "
+		          + "SELECT DISTINCT a.* FROM AMBIENTE_LOCALIDADE al "
+		          + "INNER JOIN T_BIOMELAB_AMBIENTE a ON al.fk_ambiente = a.id_ambiente "
+		          + "INNER JOIN T_BIOMELAB_LOCALIDADE l ON al.fk_localidade = l.id_localidade "
+		          + "WHERE ( "
+		          + "    UPPER(l.nm_planeta) LIKE UPPER('%'||:substring||'%') "
+		          + " OR UPPER(l.continente) LIKE UPPER('%'||:substring||'%') "
+		          + " OR UPPER(l.pais) LIKE UPPER('%'||:substring||'%') "
+		          + ") "
+		          + "AND (a.fk_usuario = :idUsuario OR a.fk_usuario IS NULL) "
+		          + "ORDER BY nm_ambiente ASC"
+		)
+		List<Ambiente> buscarTodosAmbientesPorSubstring(
+		    @Param("substring") String substring,
+		    @Param("idUsuario") Long idUsuario
 		);
 	
 	
@@ -70,23 +71,28 @@ public interface AmbienteLocalidadeRepository extends JpaRepository<AmbienteLoca
 	
 	//----- POR SUBSTRING
 	@Query(
-			nativeQuery = true,
-			value =  "SELECT DISTINCT a.* "
-			          + "FROM AMBIENTE_LOCALIDADE al "
-			          + "INNER JOIN T_BIOMELAB_AMBIENTE a ON al.fk_ambiente = a.id_ambiente "
-			          + "INNER JOIN T_BIOMELAB_LOCALIDADE l ON al.fk_localidade = l.id_localidade "
-			          + "WHERE ( "
-			          + "    UPPER(l.nm_planeta) LIKE UPPER('%'||:substring||'%') "
-			          + " OR UPPER(l.continente) LIKE UPPER('%'||:substring||'%') "
-			          + " OR UPPER(l.pais) LIKE UPPER('%'||:substring||'%') "
-			          + ") "
-			          + "AND "
-			          + "a.fk_usuario IS NULL " /*Ambientes publicos*/
-			          + "ORDER BY a.nm_ambiente ASC"/*Ordenação*/) 
-	public List<Ambiente> listarAmbientesPublicosPorLocalidadePorSubstring(
-		@Param(value = "substring") String substring
+		    nativeQuery = true,
+		    value = "SELECT DISTINCT a.* FROM T_BIOMELAB_AMBIENTE a "
+		          + "WHERE UPPER(a.nm_ambiente) LIKE UPPER('%'||:substring||'%') "
+		          + "AND a.fk_usuario IS NULL "
+		          + "UNION "
+		          + "SELECT DISTINCT a.* FROM AMBIENTE_LOCALIDADE al "
+		          + "INNER JOIN T_BIOMELAB_AMBIENTE a ON al.fk_ambiente = a.id_ambiente "
+		          + "INNER JOIN T_BIOMELAB_LOCALIDADE l ON al.fk_localidade = l.id_localidade "
+		          + "WHERE ( "
+		          + "    UPPER(l.nm_planeta) LIKE UPPER('%'||:substring||'%') "
+		          + " OR UPPER(l.continente) LIKE UPPER('%'||:substring||'%') "
+		          + " OR UPPER(l.pais) LIKE UPPER('%'||:substring||'%') "
+		          + ") "
+		          + "AND a.fk_usuario IS NULL "
+		          + "ORDER BY nm_ambiente ASC"
+		)
+		List<Ambiente> buscarAmbientesPublicosPorSubstring(
+		    @Param("substring") String substring
 		);
 	
+	
+	//Desligado
 	//------ MAPEADO POR CAMPOS DE LOCALIDADE
 		@Query(
 			    nativeQuery = true,

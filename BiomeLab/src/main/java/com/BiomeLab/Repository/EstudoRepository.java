@@ -18,5 +18,12 @@ public interface EstudoRepository extends JpaRepository<Estudo, Long> {
 			@Param("idAmbiente") Long idAmbiente
 			) ;
 
-
+	@Query("""
+		    FROM Estudo e
+		    WHERE e.ambiente.usuario.idUsuario = :idUsuario
+		    AND e.ambiente.statusAtivo = com.BiomeLab.Enum.StatusAtivoEnum.ATIVO
+		""")
+	public Optional<Estudo> buscarEstudoDoAmbienteAtivo(
+		    @Param("idUsuario") Long idUsuario
+		);
 }
