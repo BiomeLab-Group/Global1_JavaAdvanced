@@ -21,8 +21,14 @@ import com.BiomeLab.Record.EditarEstudoDTO;
 import com.BiomeLab.Repository.AmbienteRepository;
 import com.BiomeLab.Repository.EstudoRepository;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+
+@Tag(
+	    name = "Estudos",
+	    description = "Operações relacionadas aos estudos"
+	)
 @RestController
 @RequestMapping(value = "/estudo")
 public class EstudoController {

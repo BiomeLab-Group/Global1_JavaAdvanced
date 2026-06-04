@@ -19,8 +19,13 @@ import com.BiomeLab.DTO.UsuarioDTO;
 import com.BiomeLab.Model.Usuario;
 import com.BiomeLab.Repository.UsuarioRepository;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(
+	    name = "Usuários",
+	    description = "Operações relacionadas aos usuários"
+	)
 @RestController
 @RequestMapping(value = "/usuario")
 public class UsuarioController {

@@ -16,6 +16,12 @@ import com.BiomeLab.Record.AutenticarUsuarioSaidaDTO;
 import com.BiomeLab.Repository.UsuarioRepository;
 import com.BiomeLab.Security.JWTUtil;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(
+	    name = "Autenticação",
+	    description = "Login e geração de token JWT"
+	)
 @RestController
 @RequestMapping("/autenticacao")
 public class AutenticacaoController {

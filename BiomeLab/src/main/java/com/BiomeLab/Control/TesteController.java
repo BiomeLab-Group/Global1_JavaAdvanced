@@ -18,8 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.BiomeLab.Model.Teste;
 import com.BiomeLab.Repository.TesteRepository;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(
+	    name = "Testes",
+	    description = "Operações relacionadas aos testes"
+	)
 @RestController
 @RequestMapping(value = "/teste")
 public class TesteController {

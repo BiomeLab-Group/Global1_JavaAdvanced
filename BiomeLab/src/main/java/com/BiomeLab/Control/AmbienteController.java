@@ -35,9 +35,19 @@ import com.BiomeLab.Repository.EstudoRepository;
 import com.BiomeLab.Repository.TesteRepository;
 import com.BiomeLab.Repository.UsuarioRepository;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
+
+@Tag(
+	    name = "Ambientes",
+	    description = "Operações relacionadas aos ambientes"
+	)
 @RestController
 @RequestMapping(value = "/ambiente")
 public class AmbienteController {
@@ -61,6 +71,15 @@ public class AmbienteController {
     private ConjuntoPropriedadesSnapshotRepository repSnapshot;
     
     // usado para apenas teste
+    @Operation(
+    	    summary = "Retorna todos os ambientes",
+    	    description = "Endpoint auxiliar utilizado apenas para testes e validações internas.",
+    	    tags = {"Admin/Testes"}
+    	)
+    	@ApiResponse(
+    	    responseCode = "200",
+    	    description = "Lista de ambientes retornada com sucesso"
+    	)
     @GetMapping(value = "/todos")
     public ResponseEntity<List<Ambiente>> retornarTodosAmbientes() {
 
@@ -69,11 +88,27 @@ public class AmbienteController {
         return ResponseEntity.ok(ambientes);
     }
 
+    
     // Ficha Ambiente-> exibição dos campos
+    @Operation(
+    	    summary = "Retorna um ambiente específico",
+    	    description = """
+    	        Retorna os dados de um ambiente a partir do seu identificador.
+    	        
+    	        Para ambientes privados, o ambiente deve pertencer ao usuário informado.
+    	        Ambientes públicos podem ser consultados livremente.
+    	        """,
+    	    tags = {"Ambiente"}
+    	)
+    	@ApiResponses(value = {
+    	    @ApiResponse(responseCode = "200", description = "Ambiente encontrado"),
+    	    @ApiResponse(responseCode = "403", description = "O ambiente privado não pertence ao usuário informado"),
+    	    @ApiResponse(responseCode = "404", description = "Usuário ou ambiente não encontrado")
+    	})
     @GetMapping(value = "/usuario/{idUsuario}/ambiente/{idAmbiente}")
     public ResponseEntity<Ambiente> retornarAmbientePorId(
-            @PathVariable Long idUsuario,
-            @PathVariable Long idAmbiente) {
+    		@Parameter(description = "Identificador do usuário", example = "1") @PathVariable Long idUsuario,
+    		@Parameter(description = "Identificador do ambiente", example = "5") @PathVariable Long idAmbiente) {
 
         Optional<Ambiente> op_ambiente = repAmbiente.findById(idAmbiente);
 
@@ -108,7 +143,20 @@ public class AmbienteController {
     }
     
     
-    // No filtro de Ambientes Privados 
+    // No filtro de Ambientes Privados
+    @Operation(
+    	    summary = "Pesquisa ambientes privados do usuário",
+    	    description = """
+    	        Retorna a lista de ambientes privados pertencentes ao usuário.
+    	        
+    	        É possível informar um texto para filtrar os ambientes pelo nome.
+    	        Utilizado pela tela de listagem de ambientes do aplicativo.
+    	        """,
+    	    tags = {"Mobile API"}
+    	)
+    	@ApiResponses(value = {
+    	    @ApiResponse(responseCode = "200", description = "Lista de ambientes retornada com sucesso")
+    	})
     @GetMapping(value = "/usuario/{idUsuario}/ambientes/pesquisa")
     public ResponseEntity<List<Ambiente>> retornarAmbientePrivadosPorUsuario(
     		@RequestParam(name = "substring",required = false,defaultValue = "") String substring,
@@ -122,10 +170,19 @@ public class AmbienteController {
     }
     
     
-    // Busca o ambiente ativo - HOME 
+    // Busca o ambiente ativo - HOME
+    @Operation(
+    	    summary = "Retorna o ambiente ativo do usuário",
+    	    description = "Utilizado pela tela Home do aplicativo",
+    	    tags = {"Mobile API"}
+    	)
+    @ApiResponses(value = {
+    	    @ApiResponse(responseCode = "200", description = "Ambiente ativo encontrado"),
+    	    @ApiResponse(responseCode = "404", description = "Usuário não possui ambiente ativo")
+    	})
     @GetMapping("/ativo/usuario/{idUsuario}")
     public ResponseEntity<Ambiente> buscarAmbienteAtivo(
-            @PathVariable Long idUsuario) {
+            @Parameter(description = "Identificador do usuário",example = "1") @PathVariable Long idUsuario) {
 
         Optional<Ambiente> op = repAmbiente.buscarAmbienteAtivoHome(idUsuario);
 
@@ -136,6 +193,22 @@ public class AmbienteController {
     }
     
     // NA ficha de ambiente inativo
+    @Operation(
+    	    summary = "Ativa um ambiente do usuário",
+    	    description = """
+    	        Define o ambiente informado como ativo.
+    	        
+    	        Caso o usuário já possua outro ambiente ativo, ele será automaticamente
+    	        desativado antes da ativação do novo ambiente.
+    	        
+    	        Utilizado na ficha de um ambiente inativo.
+    	        """,
+    	    tags = {"Mobile API"}
+    	)
+    	@ApiResponses(value = {
+    	    @ApiResponse(responseCode = "200", description = "Ambiente ativado com sucesso"),
+    	    @ApiResponse(responseCode = "404", description = "Ambiente não encontrado ou não pertence ao usuário")
+    	})
     @Transactional
     @PutMapping("/usuario/{idUsuario}/ambiente/{idAmbiente}/ativarAmbiente")
     public ResponseEntity<Void> ativarAmbiente(
@@ -170,6 +243,21 @@ public class AmbienteController {
     }    
     
     // na ficha de ambiente ativo
+    @Operation(
+    	    summary = "Desativa um ambiente ativo",
+    	    description = """
+    	        Remove o status de ativo do ambiente informado.
+    	        
+    	        Apenas ambientes que estejam atualmente ativos podem ser desativados.
+    	        
+    	        Utilizado na ficha de um ambiente ativo.
+    	        """,
+    	    tags = {"Mobile API"}
+    	)
+    	@ApiResponses(value = {
+    	    @ApiResponse(responseCode = "200", description = "Ambiente desativado com sucesso"),
+    	    @ApiResponse(responseCode = "404", description = "Ambiente ativo não encontrado ou não pertence ao usuário")
+    	})
     @Transactional
     @PutMapping(value = "/usuario/{idUsuario}/ambiente/{idAmbiente}/desativarAmbiente")
     public ResponseEntity<Void> desativarAmbienteAtivo(
@@ -194,10 +282,31 @@ public class AmbienteController {
     }    
 
     // Na lista de Ambiente -> (+)
+    @Operation(
+    	    summary = "Cria um novo ambiente privado",
+    	    description = """
+    	        Cria um novo ambiente privado para o usuário informado.
+    	        
+    	        Durante a criação são gerados automaticamente:
+    	        - O ambiente;
+    	        - O conjunto de propriedades atuais;
+    	        - O estudo inicial do ambiente;
+    	        - O primeiro teste do estudo;
+    	        - O snapshot inicial das propriedades.
+    	        
+    	        O ambiente é criado inicialmente com status INATIVO.
+    	        Retorna o identificador do ambiente criado.
+    	        """,
+    	    tags = {"Mobile API"}
+    	)
+    	@ApiResponses(value = {
+    	    @ApiResponse(responseCode = "201", description = "Ambiente criado com sucesso"),
+    	    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    	})
     @Transactional
     @PostMapping("/usuario/{idUsuario}/criar-ambiente")
     public ResponseEntity<Long> criarAmbienteValido(
-            @PathVariable Long idUsuario,
+    		@Parameter(description = "Identificador do usuário proprietário do ambiente",example = "1") @PathVariable Long idUsuario,
             @RequestBody @Valid CriarAmbienteDTO ambienteDTO) {
     	
     	Optional<Usuario> op_usuario = repUsuario.findById(idUsuario);
@@ -270,11 +379,34 @@ public class AmbienteController {
     
     // Ficha Ambiente Público -> BAIXAR AMBIENTE 
     // Retorna o id do ambiente criado 
+    @Operation(
+    	    summary = "Baixa um ambiente público",
+    	    description = """
+    	        Cria uma cópia privada de um ambiente público para o usuário informado.
+    	        
+    	        Durante a cópia são gerados automaticamente:
+    	        - Um novo ambiente privado;
+    	        - Um conjunto de propriedades atuais com os mesmos valores do ambiente público;
+    	        - Um estudo inicial;
+    	        - Um primeiro teste;
+    	        - Um snapshot inicial das propriedades.
+    	        
+    	        O ambiente copiado é criado com status INATIVO.
+    	        
+    	        Retorna o identificador do novo ambiente criado.
+    	        """,
+    	    tags = {"Mobile API"}
+    	)
+    	@ApiResponses(value = {
+    	    @ApiResponse(responseCode = "201", description = "Ambiente público copiado com sucesso"),
+    	    @ApiResponse(responseCode = "400", description = "O ambiente informado não é público"),
+    	    @ApiResponse(responseCode = "404", description = "Usuário, ambiente ou propriedades do ambiente não encontrados")
+    	})
     @Transactional
     @PostMapping("/usuario/{idUsuario}/baixar-ambiente-publico/{idAmbiente}")
     public ResponseEntity<Long> baixarAmbientePublico(
-            @PathVariable Long idUsuario,
-            @PathVariable Long idAmbiente) {
+    		@Parameter(description = "Identificador do usuário que receberá a cópia", example = "1") @PathVariable Long idUsuario,
+    		@Parameter(description = "Identificador do ambiente público a ser copiado",example = "6") @PathVariable Long idAmbiente) {
 
         Optional<Ambiente> op_ambiente_pub = repAmbiente.findById(idAmbiente);
         if(op_ambiente_pub.isEmpty()) {
@@ -360,9 +492,28 @@ public class AmbienteController {
     
     //Ficha Ambiente Privado -> EDITAR NOME
     // Retorna nada 
+    @Operation(
+    	    summary = "Edita o nome de um ambiente privado",
+    	    description = """
+    	        Atualiza o nome de um ambiente privado pertencente ao usuário.
+    	        
+    	        Regras:
+    	        - O ambiente deve existir;
+    	        - O ambiente deve pertencer ao usuário informado;
+    	        - O ambiente deve ser privado;
+    	        - O ambiente deve estar ativo.
+    	        """,
+    	    tags = {"Mobile API"}
+    	)
+    	@ApiResponses(value = {
+    	    @ApiResponse(responseCode = "204", description = "Nome do ambiente atualizado com sucesso"),
+    	    @ApiResponse(responseCode = "400", description = "O ambiente não é privado ou não está ativo"),
+    	    @ApiResponse(responseCode = "403", description = "O ambiente não pertence ao usuário"),
+    	    @ApiResponse(responseCode = "404", description = "Ambiente não encontrado")
+    	})
     @PutMapping(value = "/usuario/{idUsuario}/editar-ambiente/{idAmbiente}")
     public ResponseEntity<Void> editarAmbiente(
-            @PathVariable Long idUsuario,
+    		 @PathVariable Long idUsuario,
             @PathVariable Long idAmbiente,
             @RequestBody @Valid EditarAmbienteDTO ambienteAtualizadoDto) {
 
@@ -396,6 +547,27 @@ public class AmbienteController {
 
     }
 
+    
+    @Operation(
+    	    summary = "Remove um ambiente",
+    	    description = """
+    	        Remove permanentemente um ambiente pertencente ao usuário.
+    	        
+    	        Durante a remoção também são excluídos:
+    	        - Conjunto de propriedades atual;
+    	        - Estudo associado ao ambiente;
+    	        - Todos os testes do estudo;
+    	        - Todos os snapshots vinculados aos testes.
+    	        
+    	        A exclusão é realizada em cascata manualmente para preservar a integridade dos dados.
+    	        """,
+    	    tags = {"Mobile API"}
+    	)
+    	@ApiResponses(value = {
+    	    @ApiResponse(responseCode = "204", description = "Ambiente removido com sucesso"),
+    	    @ApiResponse(responseCode = "403", description = "O ambiente não pertence ao usuário"),
+    	    @ApiResponse(responseCode = "404", description = "Usuário, ambiente ou estudo não encontrados")
+    	})
     @Transactional
     @DeleteMapping(value = "/usuario/{idUsuario}/remover-ambiente/{idAmbiente}")
     public ResponseEntity<Void> removerAmbiente( @PathVariable Long idUsuario,@PathVariable Long idAmbiente) {
