@@ -33,7 +33,7 @@ public interface AmbienteLocalidadeRepository extends JpaRepository<AmbienteLoca
 		          + " OR UPPER(l.pais) LIKE UPPER('%'||:substring||'%') "
 		          + ") "
 		          + "AND (a.fk_usuario = :idUsuario OR a.fk_usuario IS NULL) "
-		          + "ORDER BY nm_ambiente ASC"
+		          + "ORDER BY 1 ASC"
 		)
 		List<Ambiente> buscarTodosAmbientesPorSubstring(
 		    @Param("substring") String substring,
@@ -85,12 +85,11 @@ public interface AmbienteLocalidadeRepository extends JpaRepository<AmbienteLoca
 		          + " OR UPPER(l.pais) LIKE UPPER('%'||:substring||'%') "
 		          + ") "
 		          + "AND a.fk_usuario IS NULL "
-		          + "ORDER BY nm_ambiente ASC"
+		          + "ORDER BY 1 ASC"
 		)
 		List<Ambiente> buscarAmbientesPublicosPorSubstring(
 		    @Param("substring") String substring
 		);
-	
 	
 	//Desligado
 	//------ MAPEADO POR CAMPOS DE LOCALIDADE

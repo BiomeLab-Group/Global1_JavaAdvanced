@@ -1,5 +1,5 @@
 package com.BiomeLab.Record;
 
-public record AutenticarUsuarioSaidaDTO(String token, Long idUsuario) {
+public record AutenticarUsuarioSaidaDTO(String token) {
 
 }

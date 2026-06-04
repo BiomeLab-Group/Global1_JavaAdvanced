@@ -101,14 +101,14 @@ public class EstudoController {
     }
     
 
-    @PostMapping(value = "/criar-estudo")
-    public ResponseEntity<Void> criarEstudo(
-            @RequestBody @Valid Estudo estudo) {
-
-        repEstudo.save(estudo);
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+//    @PostMapping(value = "/criar-estudo")
+//    public ResponseEntity<Void> criarEstudo(
+//            @RequestBody @Valid Estudo estudo) {
+//
+//        repEstudo.save(estudo);
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).build();
+//    }
 
     
     @PutMapping("/usuario/{idUsuario}/ambiente/{idAmbiente}/estudo/{idEstudo}")
@@ -141,20 +141,20 @@ public class EstudoController {
     }
 
     
-    @DeleteMapping(value = "/remover-estudo/{idEstudo}")
-    public ResponseEntity<Void> removerEstudo(
-            @PathVariable Long idEstudo) {
-
-        Optional<Estudo> op = repEstudo.findById(idEstudo);
-
-        if (op.isPresent()) {
-
-            repEstudo.deleteById(idEstudo);
-
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.notFound().build();
-    }
+//    @DeleteMapping(value = "/remover-estudo/{idEstudo}")
+//    public ResponseEntity<Void> removerEstudo(
+//            @PathVariable Long idEstudo) {
+//
+//        Optional<Estudo> op = repEstudo.findById(idEstudo);
+//
+//        if (op.isPresent()) {
+//
+//            repEstudo.deleteById(idEstudo);
+//
+//            return ResponseEntity.noContent().build();
+//        }
+//
+//        return ResponseEntity.notFound().build();
+//    }
 
 }

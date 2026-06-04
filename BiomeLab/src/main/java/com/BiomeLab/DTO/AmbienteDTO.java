@@ -1,5 +1,6 @@
 package com.BiomeLab.DTO;
 
+import com.BiomeLab.Model.StatusAtivoEnum;
 import com.BiomeLab.Model.Usuario;
 import com.BiomeLab.Model.VisibilidadeEnum;
 
@@ -15,15 +16,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AmbienteDTO {
-
+	    
     private String nomeAmbiente;
-   
-    private String statusVisibilidade;
-    
-    private VisibilidadeEnum statusVisilibidade;
 
-    private String statusAtivo;
+    private VisibilidadeEnum visibilidade;
+
+    private StatusAtivoEnum statusAtivo;
 
     private Usuario usuario;
-	
 }

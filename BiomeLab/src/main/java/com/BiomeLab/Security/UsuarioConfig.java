@@ -21,17 +21,11 @@ public class UsuarioConfig {
     @Bean
     public UserDetailsService userDetailsService() {
 
-        return email -> {
-
-            Usuario usuario = repUsuario.findByEmail(email)
-                    .orElseThrow(() ->
-                            new UsernameNotFoundException("Usuário não encontrado"));
-
-            return User.builder()
-                    .username(usuario.getEmail())
-                    .password(usuario.getSenha())
-                    .roles("USER")
-                    .build();
+    	return email -> {
+    	    Usuario usuario = repUsuario.findByEmail(email)
+    	            .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    	    return new UsuarioAutenticado(usuario);
+    	
         };
     }
 	

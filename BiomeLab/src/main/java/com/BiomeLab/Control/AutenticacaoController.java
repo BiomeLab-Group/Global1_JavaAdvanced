@@ -8,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.BiomeLab.Model.Usuario;
@@ -32,8 +33,7 @@ public class AutenticacaoController {
 	@Autowired
 	private JWTUtil jwtUtil;
 	
-	@Autowired
-	private UsuarioRepository repUsuario;
+	
 	
 	@PostMapping("/login")
 	public ResponseEntity<AutenticarUsuarioSaidaDTO> login(
@@ -44,23 +44,19 @@ public class AutenticacaoController {
 	        var autenticacao =
 	                new UsernamePasswordAuthenticationToken(
 	                        dto.email(),
-	                        dto.senha());
+	                        dto.senha()
+	                );
 
-	        manager.authenticate(autenticacao); //------------------------------- Se passar daqui, o usuario existe
-	        
-	        Usuario usuario = repUsuario.findByEmail(dto.email()).orElseThrow();
+	        var auth = manager.authenticate(autenticacao);
 
-	        String token =
-	                jwtUtil.gerarToken(dto.email(), 10);
+	        String token = jwtUtil.gerarToken(dto.email(), 10);
 
 	        return ResponseEntity.ok(
-	                new AutenticarUsuarioSaidaDTO(
-	                        token,
-	                        usuario.getIdUsuario()
-	                ));
+	                new AutenticarUsuarioSaidaDTO(token)
+	        );
 
 	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	        return ResponseEntity.status(401).build();
 	    }
 	}
 
