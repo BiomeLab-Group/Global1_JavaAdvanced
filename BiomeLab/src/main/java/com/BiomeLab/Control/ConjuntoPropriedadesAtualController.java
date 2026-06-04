@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.BiomeLab.Model.Ambiente;
 import com.BiomeLab.Model.ConjuntoPropriedadesAtual;
+import com.BiomeLab.Model.StatusAtivoEnum;
+import com.BiomeLab.Repository.AmbienteRepository;
 import com.BiomeLab.Repository.ConjuntoPropriedadesAtualRepository;
 
 import jakarta.validation.Valid;
@@ -26,6 +29,9 @@ public class ConjuntoPropriedadesAtualController {
 
     @Autowired
     private ConjuntoPropriedadesAtualRepository repConjuntoPropriedadesAtual;
+    
+    @Autowired
+    private AmbienteRepository repAmbiente;
 
     @GetMapping(value = "/todos")
     public ResponseEntity<List<ConjuntoPropriedadesAtual>> retornarTodos() {
@@ -77,26 +83,37 @@ public class ConjuntoPropriedadesAtualController {
     }
 
     
-    @PutMapping(value = "/editar/{idConjunto}")
-    public ResponseEntity<Void> editar(
-            @PathVariable Long idConjunto,
+    @PutMapping("/usuario/{idUsuario}/ambiente/{idAmbiente}/conjunto-props-atual/{idConjuntoPropsAtual}")
+    public ResponseEntity<Void> editarConjuntoPropriedadesAtual(
+            @PathVariable Long idUsuario,
+            @PathVariable Long idAmbiente,
+            @PathVariable Long idConjuntoPropsAtual,
             @RequestBody @Valid ConjuntoPropriedadesAtual conjuntoAtualizado) {
 
-        Optional<ConjuntoPropriedadesAtual> op =
-                repConjuntoPropriedadesAtual.findById(idConjunto);
-
-        if (op.isPresent()) {
-
-            ConjuntoPropriedadesAtual conjunto = op.get();
-
-            conjunto.transferirConjuntoPropriedadesAtual(conjuntoAtualizado);
-
-            repConjuntoPropriedadesAtual.save(conjunto);
-
-            return ResponseEntity.noContent().build();
+        // Valida se o ambiente existe e pertence ao usuário
+        Optional<Ambiente> op_ambiente = repAmbiente.findById(idAmbiente);
+        if (op_ambiente.isEmpty()) return ResponseEntity.notFound().build();
+        
+        Ambiente ambiente = op_ambiente.get();
+        if (!ambiente.getUsuario().getIdUsuario().equals(idUsuario)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        return ResponseEntity.notFound().build();
+        // Valida se o ambiente está ativo
+        if (ambiente.getStatusAtivo() != StatusAtivoEnum.ATIVO) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Busca o conjunto de propriedades
+        Optional<ConjuntoPropriedadesAtual> op_conjunto = repConjuntoPropriedadesAtual.findById(idConjuntoPropsAtual);
+        if (op_conjunto.isEmpty()) return ResponseEntity.notFound().build();
+
+        ConjuntoPropriedadesAtual conjunto = op_conjunto.get();
+
+        conjunto.transferirConjuntoPropriedadesAtual(conjuntoAtualizado);
+        repConjuntoPropriedadesAtual.save(conjunto);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping(value = "/remover/{idConjunto}")

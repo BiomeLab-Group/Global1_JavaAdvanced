@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.BiomeLab.Model.ConjuntoPropriedadesAtual;
+import com.BiomeLab.Model.Ambiente;
 import com.BiomeLab.Model.Estudo;
+import com.BiomeLab.Record.EditarEstudoDTO;
+import com.BiomeLab.Repository.AmbienteRepository;
 import com.BiomeLab.Repository.EstudoRepository;
 
 import jakarta.validation.Valid;
@@ -27,6 +29,9 @@ public class EstudoController {
 
     @Autowired
     private EstudoRepository repEstudo;
+    
+    @Autowired
+    private AmbienteRepository repAmbiente;
 
     @GetMapping(value = "/todos")
     public ResponseEntity<List<Estudo>> retornarTodosEstudos() {
@@ -77,6 +82,18 @@ public class EstudoController {
         return ResponseEntity.notFound().build();
     }
     
+    
+    @GetMapping("/estudo/{idEstudo}/ambiente")
+    public ResponseEntity<Long> retornarIdAmbientePorEstudo(Long idEstudo){
+    	
+    	Optional<Estudo> op_estudo = repEstudo.findById(idEstudo);
+    	if (op_estudo.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+    	Estudo estudo = op_estudo.get();
+    	return ResponseEntity.ok(estudo.getAmbiente().getIdAmbiente());
+    }
+    
 
     @PostMapping(value = "/criar-estudo")
     public ResponseEntity<Void> criarEstudo(
@@ -88,27 +105,36 @@ public class EstudoController {
     }
 
     
-    @PutMapping(value = "/editar-estudo/{idEstudo}")
+    @PutMapping("/usuario/{idUsuario}/ambiente/{idAmbiente}/estudo/{idEstudo}")
     public ResponseEntity<Void> editarEstudo(
+            @PathVariable Long idUsuario,
+            @PathVariable Long idAmbiente,
             @PathVariable Long idEstudo,
-            @RequestBody @Valid Estudo estudoAtualizado) {
+            @RequestBody @Valid EditarEstudoDTO estudoDTO) {
 
-        Optional<Estudo> op = repEstudo.findById(idEstudo);
+        // Valida se o ambiente existe e pertence ao usuário
+        Optional<Ambiente> op_ambiente = repAmbiente.findById(idAmbiente);
+        if (op_ambiente.isEmpty()) return ResponseEntity.notFound().build();
 
-        if (op.isPresent()) {
-
-            Estudo estudo = op.get();
-
-            estudo.transferirEstudo(estudoAtualizado);
-
-            repEstudo.save(estudo);
-
-            return ResponseEntity.noContent().build();
+        Ambiente ambiente = op_ambiente.get();
+        if (!ambiente.getUsuario().getIdUsuario().equals(idUsuario)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        return ResponseEntity.notFound().build();
+        // Busca o estudo
+        Optional<Estudo> op_estudo = repEstudo.findById(idEstudo);
+        if (op_estudo.isEmpty()) return ResponseEntity.notFound().build();
+
+        Estudo estudo = op_estudo.get();
+        estudo.setNomeEstudo(estudoDTO.nomeEstudo());
+        estudo.setDescricaoEstudo(estudoDTO.descricaoEstudo());
+
+        repEstudo.save(estudo);
+
+        return ResponseEntity.noContent().build();
     }
 
+    
     @DeleteMapping(value = "/remover-estudo/{idEstudo}")
     public ResponseEntity<Void> removerEstudo(
             @PathVariable Long idEstudo) {

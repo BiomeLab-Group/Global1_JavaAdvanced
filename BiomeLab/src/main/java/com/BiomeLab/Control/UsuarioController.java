@@ -82,7 +82,7 @@ public class UsuarioController {
 	public ResponseEntity<Void> criarUsuario(@RequestBody @Valid Usuario usuario){
 		
 		
-		repUsuario.save(usuario);
+		repUsuario.save(usuario);	
 		
 		
 		return ResponseEntity.status(HttpStatus.CREATED).build();

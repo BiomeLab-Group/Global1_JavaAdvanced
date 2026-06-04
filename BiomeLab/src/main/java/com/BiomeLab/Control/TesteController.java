@@ -56,10 +56,6 @@ public class TesteController {
             ){
 
         List<Teste> testes = repTeste.retornarTestesPorEstudoPorAmbientePorUsuario(idEstudo, idAmbiente, idUsuario);
-
-        if (testes.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(testes);
     }
     
