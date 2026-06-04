@@ -54,7 +54,7 @@ public class EstudoController {
         return ResponseEntity.notFound().build();
     }
     
-    
+    // Na ficha de Estudo
     @GetMapping(value = "/ambiente/{idAmbiente}/usuario/{idUsuario}")
     public ResponseEntity<Estudo> retornarEstudoPorAmbienteEUsuario(
     		@PathVariable("idUsuario") Long idUsuario,
@@ -82,7 +82,7 @@ public class EstudoController {
         return ResponseEntity.notFound().build();
     }
     
-    
+    //
     @GetMapping("/estudo/{idEstudo}/ambiente")
     public ResponseEntity<Long> retornarIdAmbientePorEstudo(Long idEstudo){
     	
