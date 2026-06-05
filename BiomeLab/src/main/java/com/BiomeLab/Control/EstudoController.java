@@ -1,5 +1,6 @@
 package com.BiomeLab.Control;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,6 +131,21 @@ public class EstudoController {
 //
 //        return ResponseEntity.status(HttpStatus.CREATED).build();
 //    }
+    
+    @Operation(summary = "Retorna todos os estudos do usuário autenticado")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista de estudos retornada com sucesso")
+    })
+    @GetMapping("/meus-estudos")
+    public ResponseEntity<List<Estudo>> retornarEstudosPorUsuario() {
+
+        UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
+        Usuario usuario = auth.getUsuario();
+
+        List<Estudo> estudos = repEstudo.buscarEstudosPorUsuario(usuario.getIdUsuario());
+        return ResponseEntity.ok(estudos);
+    }
 
     
     @Operation(

@@ -1,5 +1,6 @@
 package com.BiomeLab.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,11 @@ public interface EstudoRepository extends JpaRepository<Estudo, Long> {
 	public Optional<Estudo> buscarEstudoDoAmbienteAtivo(
 		    @Param("idUsuario") Long idUsuario
 		);
+	
+	@Query("""
+		    FROM Estudo e
+		    WHERE e.ambiente.usuario.idUsuario = :idUsuario
+		    ORDER BY e.nomeEstudo ASC
+		""")
+		List<Estudo> buscarEstudosPorUsuario(@Param("idUsuario") Long idUsuario);
 }
