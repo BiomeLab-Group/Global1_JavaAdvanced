@@ -86,7 +86,6 @@ public class AmbienteController {
     	    responseCode = "200",
     	    description = "Lista de ambientes retornada com sucesso"
     	)
-    @Tag(name = "Teste em Cloud")
     @GetMapping(value = "/todos")
     public ResponseEntity<List<Ambiente>> retornarTodosAmbientes() {
 
@@ -111,6 +110,7 @@ public class AmbienteController {
     	    @ApiResponse(responseCode = "403", description = "O ambiente privado não pertence ao usuário informado"),
     	    @ApiResponse(responseCode = "404", description = "Usuário ou ambiente não encontrado")
     	})
+    @Tag(name = "Teste em Cloud")
     @GetMapping("/ambiente/{idAmbiente}")
     public ResponseEntity<AmbienteDTO> retornarAmbientePorId(
             @Parameter(description = "Identificador do ambiente", example = "5")
@@ -283,7 +283,6 @@ public class AmbienteController {
     	    @ApiResponse(responseCode = "200", description = "Ambiente desativado com sucesso"),
     	    @ApiResponse(responseCode = "404", description = "Ambiente ativo não encontrado ou não pertence ao usuário")
     	})
-    @Tag(name = "Teste em Cloud")
     @Transactional
     @PutMapping("/{idAmbiente}/desativar")
     public ResponseEntity<Void> desativarAmbienteAtivo(@PathVariable Long idAmbiente) {
@@ -495,6 +494,7 @@ public class AmbienteController {
     	    @ApiResponse(responseCode = "403", description = "O ambiente não pertence ao usuário"),
     	    @ApiResponse(responseCode = "404", description = "Ambiente não encontrado")
     	})
+    @Tag(name="Teste em Cloud")
     @PutMapping("/editar-ambiente/{idAmbiente}")
     public ResponseEntity<Void> editarAmbiente(
             @PathVariable Long idAmbiente,
