@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.BiomeLab.DTO.UsuarioDTO;
 import com.BiomeLab.Model.Usuario;
+import com.BiomeLab.Record.CriarUsuarioDTO;
+import com.BiomeLab.Record.EditarUsuarioDTO;
 import com.BiomeLab.Repository.UsuarioRepository;
 import com.BiomeLab.Security.UsuarioAutenticado;
 
@@ -42,7 +44,6 @@ public class UsuarioController {
 	
 	@Operation(summary = "Retorna todos os usuários", description = "Apenas para testes")
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"))
-	@Tag(name = "Teste em Cloud")
 	@GetMapping("/todos")
 	public ResponseEntity<List<Usuario>> retornarTodosUsuarios() {
 	    return ResponseEntity.ok(repUsuario.findAll());
@@ -65,6 +66,7 @@ public class UsuarioController {
 	    @ApiResponse(responseCode = "200", description = "Dados retornados com sucesso"),
 	    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
 	})
+	@Tag(name = "Teste em Cloud")
 	@GetMapping("/dados-pessoais")
 	public ResponseEntity<UsuarioDTO> retornarDadosUsuario() {
 
@@ -88,14 +90,20 @@ public class UsuarioController {
 	@ApiResponses({
 	    @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso")
 	})
-	@Tag(name = "")
+	@Tag(name = "Teste em Cloud")
 	@PostMapping("/criar-usuario")
-	public ResponseEntity<Void> criarUsuario(@RequestBody @Valid Usuario usuario) {
+	public ResponseEntity<Void> criarUsuario(@RequestBody @Valid CriarUsuarioDTO dto) {
+
+	    Usuario usuario = Usuario.builder()
+	            .nomeUsuario(dto.nomeUsuario())
+	            .dataNascimento(dto.dataNascimento())
+	            .email(dto.email())
+	            .senha(dto.senha())
+	            .build();
+
 	    repUsuario.save(usuario);
 	    return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
-	
-	
 	
 	// O usuario Pode apenas modificar nome e email 
 	@Operation(summary = "Edita nome e email do usuário autenticado")
@@ -105,14 +113,14 @@ public class UsuarioController {
 	})
 	@Tag(name = "Teste em Cloud")
 	@PutMapping("/editar-usuario")
-	public ResponseEntity<Void> editarUsuario(@RequestBody @Valid Usuario usuarioAtualizado) {
+	public ResponseEntity<Void> editarUsuario(@RequestBody @Valid EditarUsuarioDTO dto) {
 
 	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
 	            .getContext().getAuthentication().getPrincipal();
 	    Usuario usuario = auth.getUsuario();
 
-	    usuario.setEmail(usuarioAtualizado.getEmail());
-	    usuario.setNomeUsuario(usuarioAtualizado.getNomeUsuario());
+	    usuario.setEmail(dto.email());
+	    usuario.setNomeUsuario(dto.nomeUsuario());
 	    repUsuario.save(usuario);
 
 	    return ResponseEntity.noContent().build();

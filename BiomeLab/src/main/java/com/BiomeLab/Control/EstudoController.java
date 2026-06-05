@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.BiomeLab.DTO.EstudoDTO;
+import com.BiomeLab.Mapper.EstudoMapper;
 import com.BiomeLab.Model.Ambiente;
 import com.BiomeLab.Model.Estudo;
 import com.BiomeLab.Model.Usuario;
@@ -43,6 +45,9 @@ public class EstudoController {
     
     @Autowired
     private AmbienteRepository repAmbiente;
+    
+    @Autowired
+    private EstudoMapper mapper;
 
 //    @GetMapping(value = "/todos")
 //    public ResponseEntity<List<Estudo>> retornarTodosEstudos() {
@@ -74,7 +79,7 @@ public class EstudoController {
     	    @ApiResponse(responseCode = "404", description = "Estudo não encontrado")
     	})
 	@GetMapping("/ambiente/{idAmbiente}")
-	public ResponseEntity<Estudo> retornarEstudoPorAmbienteEUsuario(
+	public ResponseEntity<EstudoDTO> retornarEstudoPorAmbienteEUsuario(
 	        @Parameter(description = "Identificador do ambiente", example = "1")
 	        @PathVariable Long idAmbiente) {
 
@@ -84,7 +89,7 @@ public class EstudoController {
 
 	    Optional<Estudo> op = repEstudo.retornaEstudoPorAmbientePorUsuario(usuario.getIdUsuario(), idAmbiente);
 
-	    if (op.isPresent()) return ResponseEntity.ok(op.get());
+	    if (op.isPresent()) return ResponseEntity.ok(mapper.toDTO(op.get()));
 	    return ResponseEntity.notFound().build();
 	}
     

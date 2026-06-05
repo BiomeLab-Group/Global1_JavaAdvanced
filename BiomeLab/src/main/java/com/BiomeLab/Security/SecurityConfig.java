@@ -22,7 +22,7 @@ public class SecurityConfig {
 			.csrf(csrf -> csrf.disable())
 			.headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
 			.authorizeHttpRequests(req -> 
-			req.requestMatchers("/autenticacao/**","/swagger-ui/**","/v3/**","/h2-console/**").permitAll()
+			req.requestMatchers("/autenticacao/**","/swagger-ui/**","/v3/**","/h2-console/**","/usuario/criar-usuario").permitAll()
 								.anyRequest().authenticated())
 			.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
