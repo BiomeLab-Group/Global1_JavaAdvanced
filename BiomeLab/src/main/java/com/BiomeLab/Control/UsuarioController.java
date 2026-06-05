@@ -118,8 +118,7 @@ public class UsuarioController {
 	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
 	            .getContext().getAuthentication().getPrincipal();
 	    Usuario usuario = auth.getUsuario();
-
-	    usuario.setEmail(dto.email());
+	   
 	    usuario.setNomeUsuario(dto.nomeUsuario());
 	    repUsuario.save(usuario);
 

@@ -25,7 +25,7 @@ public class JWTUtil {
 								 .subject(username)
 								 .issuedAt(data_atual)
 								 .expiration(
-								  new Date(data_atual.getTime() + (1000 * 60 * duracao)))
+								  new Date(data_atual.getTime() + (1000 * 60 * 60 * duracao)))
 								 .signWith(CHAVE);
 								 
 		return builder.compact();

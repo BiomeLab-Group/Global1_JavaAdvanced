@@ -111,39 +111,30 @@ public class AmbienteController {
     	    @ApiResponse(responseCode = "403", description = "O ambiente privado não pertence ao usuário informado"),
     	    @ApiResponse(responseCode = "404", description = "Usuário ou ambiente não encontrado")
     	})
-    @GetMapping(value = "/usuario/{idUsuario}/ambiente/{idAmbiente}")
+    @GetMapping("/ambiente/{idAmbiente}")
     public ResponseEntity<AmbienteDTO> retornarAmbientePorId(
-    		@Parameter(description = "Identificador do usuário", example = "1") @PathVariable Long idUsuario,
-    		@Parameter(description = "Identificador do ambiente", example = "5") @PathVariable Long idAmbiente) {
+            @Parameter(description = "Identificador do ambiente", example = "5")
+            @PathVariable Long idAmbiente) {
 
-        Optional<Ambiente> op_ambiente = repAmbiente.findById(idAmbiente);
+        Optional<Ambiente> opAmbiente = repAmbiente.findById(idAmbiente);
 
-        if (op_ambiente.isEmpty()) { 
-        	return ResponseEntity.notFound().build();
-        	// Ambiente não encontrado 
+        if (opAmbiente.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
-        Ambiente ambiente = op_ambiente.get();
-        
-        
-        Optional<Usuario> op_usuario = repUsuario.findById(idUsuario);
-        if(op_usuario.isEmpty()) {
-        	return ResponseEntity.notFound().build();
-        	// Usuario não encontrado
-        }
-        Usuario usuario = op_usuario.get();
-        
+
+        Ambiente ambiente = opAmbiente.get();
+
+        UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
+
+        Usuario usuario = auth.getUsuario();
+
         if (ambiente.getVisibilidade() == VisibilidadeEnum.R) {
-        	
-        	if (!ambiente.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                //Ambiente não pertence ao usuario
-            }
-        	
-		}else if(ambiente.getVisibilidade() == VisibilidadeEnum.P) {
-			
-			
-		}
 
+            if (!ambiente.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
 
         return ResponseEntity.ok(mapper.toDTO(ambiente));
     }
@@ -162,8 +153,9 @@ public class AmbienteController {
     	@ApiResponses(value = {
     	    @ApiResponse(responseCode = "200", description = "Lista de ambientes retornada com sucesso")
     	})
-    @GetMapping("/Privados/pesquisa")
-    public ResponseEntity<List<AmbienteDTO>> retornarAmbientesPrivados(
+
+    @GetMapping("/privados/pesquisa")
+    public ResponseEntity<List<Ambiente>> retornarAmbientesPrivados(
             @RequestParam(name = "substring", defaultValue = "") String substring
     ) {
 
@@ -178,11 +170,8 @@ public class AmbienteController {
                         usuario.getIdUsuario()
                 );
 
-        List<AmbienteDTO> dto = ambientes.stream()
-                .map(mapper::toDTO)
-                .toList();
 
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(ambientes);
     }
     
     @Operation(
@@ -209,6 +198,8 @@ public class AmbienteController {
     	    if (op_conjunto.isPresent()) return ResponseEntity.ok(op_conjunto.get());
     	    return ResponseEntity.notFound().build();
     	}
+    
+    
     
     // Busca o ambiente ativo - HOME
     @Operation(
@@ -250,7 +241,7 @@ public class AmbienteController {
     	    @ApiResponse(responseCode = "200", description = "Ambiente ativado com sucesso"),
     	    @ApiResponse(responseCode = "404", description = "Ambiente não encontrado ou não pertence ao usuário")
     	})@Transactional
-    	@PutMapping("/ambiente/{idAmbiente}/ativar")
+    @PutMapping("/{idAmbiente}/ativar")
     public ResponseEntity<Void> ativarAmbiente(@PathVariable Long idAmbiente) {
 
         UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
@@ -294,7 +285,7 @@ public class AmbienteController {
     	})
     @Tag(name = "Teste em Cloud")
     @Transactional
-    @PutMapping("/ambiente/{idAmbiente}/desativar")
+    @PutMapping("/{idAmbiente}/desativar")
     public ResponseEntity<Void> desativarAmbienteAtivo(@PathVariable Long idAmbiente) {
 
         UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
@@ -526,9 +517,7 @@ public class AmbienteController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (ambiente.getStatusAtivo() != StatusAtivoEnum.ATIVO) {
-            return ResponseEntity.badRequest().build();
-        }
+
 
         ambiente.setNomeAmbiente(ambienteAtualizadoDto.nomeAmbiente());
         repAmbiente.save(ambiente);
