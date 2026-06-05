@@ -22,5 +22,7 @@ public interface ConjuntoPropriedadesSnapshotRepository extends JpaRepository<Co
 	        @Param("idAmbiente") Long idAmbiente,
 	        @Param("idUsuario") Long idUsuario
 	);
+
+	public Optional<ConjuntoPropriedadesSnapshot> findByTesteIdTeste(Long idTeste);
 	
 }

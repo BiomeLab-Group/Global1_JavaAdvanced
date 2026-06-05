@@ -1,30 +1,36 @@
 package com.BiomeLab.Control;
 
-import java.util.Optional;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.BiomeLab.Model.Ambiente;
 import com.BiomeLab.Model.ConjuntoPropriedadesAtual;
+import com.BiomeLab.Model.ConjuntoPropriedadesSnapshot;
+import com.BiomeLab.Model.Estudo;
 import com.BiomeLab.Model.StatusAtivoEnum;
+import com.BiomeLab.Model.Teste;
 import com.BiomeLab.Model.Usuario;
+import com.BiomeLab.Record.AlterarCondicoesDTO;
 import com.BiomeLab.Repository.AmbienteRepository;
 import com.BiomeLab.Repository.ConjuntoPropriedadesAtualRepository;
+import com.BiomeLab.Repository.ConjuntoPropriedadesSnapshotRepository;
+import com.BiomeLab.Repository.EstudoRepository;
+import com.BiomeLab.Repository.TesteRepository;
 import com.BiomeLab.Security.UsuarioAutenticado;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 @RestController
@@ -36,7 +42,16 @@ public class ConjuntoPropriedadesAtualController {
     
     @Autowired
     private AmbienteRepository repAmbiente;
+    
+    @Autowired
+    private ConjuntoPropriedadesSnapshotRepository repConjuntoPropriedadesSnapshot;
 
+    @Autowired
+    private TesteRepository repTeste;
+    
+    @Autowired
+    private EstudoRepository repEstudo;
+    
 //    @GetMapping(value = "/todos")
 //    public ResponseEntity<List<ConjuntoPropriedadesAtual>> retornarTodos() {
 //
@@ -74,52 +89,96 @@ public class ConjuntoPropriedadesAtualController {
 
     
     @Operation(
-    	    summary = "Edita o conjunto de propriedades atuais de um ambiente",
-    	    description = "O ambiente deve existir, pertencer ao usuário autenticado e estar ativo"
+    	    summary = "Altera as condições do ambiente ativo",
+    	    description = """
+    	        Encerra o teste atual, atualiza as propriedades do ambiente
+    	        e inicia um novo teste com snapshot das novas condições.
+    	        O ambiente deve estar ativo e pertencer ao usuário autenticado.
+    	        """
     	)
     	@ApiResponses({
-    	    @ApiResponse(responseCode = "204", description = "Propriedades atualizadas com sucesso"),
+    	    @ApiResponse(responseCode = "204", description = "Condições alteradas com sucesso"),
     	    @ApiResponse(responseCode = "400", description = "Ambiente não está ativo"),
     	    @ApiResponse(responseCode = "403", description = "Ambiente não pertence ao usuário"),
-    	    @ApiResponse(responseCode = "404", description = "Ambiente ou conjunto de propriedades não encontrado")
+    	    @ApiResponse(responseCode = "404", description = "Ambiente, estudo, teste ou propriedades não encontrados")
     	})
-    	@PutMapping("/ambiente/{idAmbiente}/conjunto-props-atual/{idConjuntoPropsAtual}")
-    	public ResponseEntity<Void> editarConjuntoPropriedadesAtual(
-    	        @Parameter(description = "Identificador do ambiente", example = "1")
-    	        @PathVariable Long idAmbiente,
-    	        @Parameter(description = "Identificador do conjunto de propriedades", example = "1")
-    	        @PathVariable Long idConjuntoPropsAtual,
-    	        @RequestBody @Valid ConjuntoPropriedadesAtual conjuntoAtualizado) {
+    @PostMapping("/ambiente/{idAmbiente}/alterar-condicoes")
+    @Transactional
+    public ResponseEntity<Void> alterarCondicoes(
+            @PathVariable Long idAmbiente,
+            @RequestBody @Valid AlterarCondicoesDTO dto) {
 
-    	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
-    	            .getContext().getAuthentication().getPrincipal();
-    	    Usuario usuario = auth.getUsuario();
+        UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
 
-    	    Optional<Ambiente> op_ambiente = repAmbiente.findById(idAmbiente);
-    	    if (op_ambiente.isEmpty()) return ResponseEntity.notFound().build();
+        Usuario usuario = auth.getUsuario();
 
-    	    Ambiente ambiente = op_ambiente.get();
-    	    if (!ambiente.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
-    	        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-    	    }
+        // validar ambiente
+        Ambiente ambiente = repAmbiente.findById(idAmbiente)
+                .orElseThrow();
+        
+        if (!ambiente.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        if (ambiente.getStatusAtivo() != StatusAtivoEnum.ATIVO) {
+            return ResponseEntity.badRequest().build();
+        }
 
-    	    if (ambiente.getStatusAtivo() != StatusAtivoEnum.ATIVO) {
-    	        return ResponseEntity.badRequest().build();
-    	    }
+        // buscar estudo do ambiente
+        Estudo estudo = repEstudo
+                .retornaEstudoPorAmbientePorUsuario(
+                        usuario.getIdUsuario(),
+                        idAmbiente)
+                .orElseThrow();
 
-    	    Optional<ConjuntoPropriedadesAtual> op_conjunto = repConjuntoPropriedadesAtual.findById(idConjuntoPropsAtual);
-    	    if (op_conjunto.isEmpty()) return ResponseEntity.notFound().build();
+        // buscar teste ativo
+        Teste testeAtual = repTeste
+                .findByEstudo_IdEstudoAndDataTerminoTesteIsNull(estudo.getIdEstudo())
+                .orElseThrow();
 
-    	    ConjuntoPropriedadesAtual conjunto = op_conjunto.get();
-    	    conjunto.setTemperatura(conjuntoAtualizado.getTemperatura());
-    	    conjunto.setUmidade(conjuntoAtualizado.getUmidade());
-    	    conjunto.setLuminosidade(conjuntoAtualizado.getLuminosidade());
-    	    conjunto.setGravidade(conjuntoAtualizado.getGravidade());
-    	    conjunto.setPressaoAtmosferica(conjuntoAtualizado.getPressaoAtmosferica());
-    	    repConjuntoPropriedadesAtual.save(conjunto);
+        // encerrar teste atual
+        testeAtual.setDataTerminoTeste(LocalDate.now());
+        repTeste.save(testeAtual);
 
-    	    return ResponseEntity.noContent().build();
-    	}
+        // atualizar propriedades atuais
+        ConjuntoPropriedadesAtual props =
+                repConjuntoPropriedadesAtual
+                        .retornaPropsAtuaisPorAmbiente(idAmbiente)
+                        .orElseThrow();
+
+        props.setTemperatura(dto.temperatura());
+        props.setUmidade(dto.umidade());
+        props.setLuminosidade(dto.luminosidade());
+        props.setGravidade(dto.gravidade());
+        props.setPressaoAtmosferica(dto.pressaoAtmosferica());
+
+        repConjuntoPropriedadesAtual.save(props);
+
+        // criar novo teste
+        Teste novoTeste = Teste.builder()
+                .nomeTeste(dto.nomeTeste())
+                .dataInicioTeste(LocalDate.now())
+                .estudo(estudo)
+                .build();
+
+        repTeste.save(novoTeste);
+
+        // criar snapshot
+        ConjuntoPropriedadesSnapshot snapshot =
+                ConjuntoPropriedadesSnapshot.builder()
+                        .temperatura(dto.temperatura())
+                        .umidade(dto.umidade())
+                        .luminosidade(dto.luminosidade())
+                        .gravidade(dto.gravidade())
+                        .pressaoAtmosferica(dto.pressaoAtmosferica())
+                        .teste(novoTeste)
+                        .build();
+
+        repConjuntoPropriedadesSnapshot.save(snapshot);
+
+        return ResponseEntity.noContent().build();
+    }
 
 //    @DeleteMapping(value = "/remover/{idConjunto}")
 //    public ResponseEntity<Void> remover(@PathVariable Long idConjunto) {

@@ -16,11 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.BiomeLab.DTO.EstudoDTO;
 import com.BiomeLab.Mapper.EstudoMapper;
-import com.BiomeLab.Model.Ambiente;
 import com.BiomeLab.Model.Estudo;
 import com.BiomeLab.Model.Usuario;
 import com.BiomeLab.Record.EditarEstudoDTO;
-import com.BiomeLab.Repository.AmbienteRepository;
+import com.BiomeLab.Record.EstudoCardDTO;
 import com.BiomeLab.Repository.EstudoRepository;
 import com.BiomeLab.Security.UsuarioAutenticado;
 
@@ -43,8 +42,6 @@ public class EstudoController {
     @Autowired
     private EstudoRepository repEstudo;
     
-    @Autowired
-    private AmbienteRepository repAmbiente;
     
     @Autowired
     private EstudoMapper mapper;
@@ -78,7 +75,7 @@ public class EstudoController {
     	    @ApiResponse(responseCode = "200", description = "Estudo encontrado"),
     	    @ApiResponse(responseCode = "404", description = "Estudo não encontrado")
     	})
-	@GetMapping("/ambiente/{idAmbiente}")
+	@GetMapping("/ambiente/{idAmbiente}/estudo")
 	public ResponseEntity<EstudoDTO> retornarEstudoPorAmbienteEUsuario(
 	        @Parameter(description = "Identificador do ambiente", example = "1")
 	        @PathVariable Long idAmbiente) {
@@ -116,17 +113,17 @@ public class EstudoController {
     	}
     
     //
-    @GetMapping("/estudo/{idEstudo}/ambiente")
-    public ResponseEntity<Long> retornarIdAmbientePorEstudo(Long idEstudo){
-    	
-    	Optional<Estudo> op_estudo = repEstudo.findById(idEstudo);
-    	if (op_estudo.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-    	Estudo estudo = op_estudo.get();
-    	return ResponseEntity.ok(estudo.getAmbiente().getIdAmbiente());
-    }
-    
+//    @GetMapping("/estudo/{idEstudo}/ambiente")
+//    public ResponseEntity<Long> retornarIdAmbientePorEstudo(Long idEstudo){
+//    	
+//    	Optional<Estudo> op_estudo = repEstudo.findById(idEstudo);
+//    	if (op_estudo.isEmpty()) {
+//			return ResponseEntity.notFound().build();
+//		}
+//    	Estudo estudo = op_estudo.get();
+//    	return ResponseEntity.ok(estudo.getAmbiente().getIdAmbiente());
+//    }
+//    
 
 //    @PostMapping(value = "/criar-estudo")
 //    public ResponseEntity<Void> criarEstudo(
@@ -142,48 +139,66 @@ public class EstudoController {
         @ApiResponse(responseCode = "200", description = "Lista de estudos retornada com sucesso")
     })
     @GetMapping("/meus-estudos")
-    public ResponseEntity<List<Estudo>> retornarEstudosPorUsuario() {
+    public ResponseEntity<List<EstudoCardDTO>> retornarEstudosPorUsuario() {
 
         UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
                 .getContext().getAuthentication().getPrincipal();
+
         Usuario usuario = auth.getUsuario();
 
-        List<Estudo> estudos = repEstudo.buscarEstudosPorUsuario(usuario.getIdUsuario());
-        return ResponseEntity.ok(estudos);
+        List<Estudo> estudos =
+                repEstudo.buscarEstudosPorUsuario(usuario.getIdUsuario());
+
+        List<EstudoCardDTO> estudosDTO = estudos.stream()
+                .map(mapper::toCardDTO)
+                .toList();
+
+        return ResponseEntity.ok(estudosDTO);
     }
 
     
     @Operation(
     	    summary = "Edita um estudo",
-    	    description = "O ambiente deve existir e pertencer ao usuário autenticado"
+    	    description = """
+    	        Permite ao usuário autenticado editar os dados de um estudo.
+
+    	        O estudo deve pertencer a um ambiente de propriedade
+    	        do usuário autenticado.
+    	        """
     	)
     	@ApiResponses({
     	    @ApiResponse(responseCode = "204", description = "Estudo atualizado com sucesso"),
-    	    @ApiResponse(responseCode = "403", description = "Ambiente não pertence ao usuário"),
-    	    @ApiResponse(responseCode = "404", description = "Ambiente ou estudo não encontrado")
+    	    @ApiResponse(responseCode = "403", description = "O usuário não possui acesso ao estudo"),
+    	    @ApiResponse(responseCode = "404", description = "Estudo não encontrado")
     	})
-    	@PutMapping("/ambiente/{idAmbiente}/estudo/{idEstudo}")
+    	@PutMapping("/editar-estudo/{idEstudo}")
     	public ResponseEntity<Void> editarEstudo(
-    	        @Parameter(description = "Identificador do ambiente", example = "1") @PathVariable Long idAmbiente,
-    	        @Parameter(description = "Identificador do estudo", example = "1") @PathVariable Long idEstudo,
+    	        @Parameter(description = "Identificador do estudo", example = "1")
+    	        @PathVariable Long idEstudo,
+
     	        @RequestBody @Valid EditarEstudoDTO estudoDTO) {
 
     	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
     	            .getContext().getAuthentication().getPrincipal();
+
     	    Usuario usuario = auth.getUsuario();
 
-    	    Optional<Ambiente> op_ambiente = repAmbiente.findById(idAmbiente);
-    	    if (op_ambiente.isEmpty()) return ResponseEntity.notFound().build();
+    	    Optional<Estudo> opEstudo = repEstudo.findById(idEstudo);
 
-    	    Ambiente ambiente = op_ambiente.get();
-    	    if (!ambiente.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
+    	    if (opEstudo.isEmpty()) {
+    	        return ResponseEntity.notFound().build();
+    	    }
+
+    	    Estudo estudo = opEstudo.get();
+
+    	    if (!estudo.getAmbiente()
+    	            .getUsuario()
+    	            .getIdUsuario()
+    	            .equals(usuario.getIdUsuario())) {
+
     	        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     	    }
 
-    	    Optional<Estudo> op_estudo = repEstudo.findById(idEstudo);
-    	    if (op_estudo.isEmpty()) return ResponseEntity.notFound().build();
-
-    	    Estudo estudo = op_estudo.get();
     	    estudo.setNomeEstudo(estudoDTO.nomeEstudo());
     	    estudo.setDescricaoEstudo(estudoDTO.descricaoEstudo());
 

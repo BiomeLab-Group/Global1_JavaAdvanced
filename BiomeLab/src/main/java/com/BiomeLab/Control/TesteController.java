@@ -15,8 +15,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.BiomeLab.Mapper.TesteMapper;
+import com.BiomeLab.Model.ConjuntoPropriedadesSnapshot;
+import com.BiomeLab.Model.Estudo;
 import com.BiomeLab.Model.Teste;
 import com.BiomeLab.Model.Usuario;
+import com.BiomeLab.Record.EditarTesteDTO;
+import com.BiomeLab.Record.TesteCardDTO;
+import com.BiomeLab.Repository.ConjuntoPropriedadesSnapshotRepository;
+import com.BiomeLab.Repository.EstudoRepository;
 import com.BiomeLab.Repository.TesteRepository;
 import com.BiomeLab.Security.UsuarioAutenticado;
 
@@ -37,6 +44,15 @@ public class TesteController {
 
     @Autowired
     private TesteRepository repTeste;
+    
+    @Autowired
+    private EstudoRepository repEstudo;
+    
+    @Autowired
+    private ConjuntoPropriedadesSnapshotRepository repConjuntoPropriedadesSnapshot;
+    
+    @Autowired
+    private TesteMapper mapper;
 
 //    @GetMapping(value = "/todos")
 //    public ResponseEntity<List<Teste>> retornarTodosTestes() {
@@ -59,22 +75,52 @@ public class TesteController {
 //        return ResponseEntity.notFound().build();
 //    }
     
-    @Operation(summary = "Retorna os testes de um estudo por ambiente do usuário autenticado")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Lista de testes retornada com sucesso")
-    })
-    @GetMapping("/estudo/{idEstudo}/ambiente/{idAmbiente}")
-    public ResponseEntity<List<Teste>> retornarTestesPorEstudoPorAmbientePorUsuario(
-            @Parameter(description = "Identificador do estudo", example = "1") @PathVariable Long idEstudo,
-            @Parameter(description = "Identificador do ambiente", example = "1") @PathVariable Long idAmbiente) {
+    @Operation(
+    	    summary = "Retorna os testes de um estudo",
+    	    description = """
+    	        Retorna todos os testes de um estudo pertencente
+    	        ao usuário autenticado.
+    	        """
+    	)
+    	@ApiResponses({
+    	    @ApiResponse(responseCode = "200", description = "Testes encontrados"),
+    	    @ApiResponse(responseCode = "403", description = "O usuário não possui acesso ao estudo"),
+    	    @ApiResponse(responseCode = "404", description = "Estudo não encontrado")
+    	})
+    	@GetMapping("/estudo/{idEstudo}")
+    	public ResponseEntity<List<TesteCardDTO>> retornarTestesPorEstudo(
+    	        @Parameter(description = "Identificador do estudo", example = "1")
+    	        @PathVariable Long idEstudo) {
 
-        UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
-                .getContext().getAuthentication().getPrincipal();
-        Usuario usuario = auth.getUsuario();
+    	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+    	            .getContext().getAuthentication().getPrincipal();
 
-        List<Teste> testes = repTeste.retornarTestesPorEstudoPorAmbientePorUsuario(idEstudo, idAmbiente, usuario.getIdUsuario());
-        return ResponseEntity.ok(testes);
-    }
+    	    Usuario usuario = auth.getUsuario();
+
+    	    Optional<Estudo> opEstudo = repEstudo.findById(idEstudo);
+
+    	    if (opEstudo.isEmpty()) {
+    	        return ResponseEntity.notFound().build();
+    	    }
+
+    	    Estudo estudo = opEstudo.get();
+
+    	    if (!estudo.getAmbiente()
+    	            .getUsuario()
+    	            .getIdUsuario()
+    	            .equals(usuario.getIdUsuario())) {
+
+    	        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    	    }
+
+    	    List<Teste> testes = repTeste.findByEstudoIdEstudo(idEstudo);
+
+    	    List<TesteCardDTO> testesDTO = testes.stream()
+    	            .map(mapper::toCardDTO)
+    	            .toList();
+
+    	    return ResponseEntity.ok(testesDTO);
+    	}
     
     
 
@@ -89,37 +135,55 @@ public class TesteController {
 
     @Operation(
     	    summary = "Edita um teste",
-    	    description = "O teste deve pertencer ao usuário autenticado"
+    	    description = """
+    	        Permite ao usuário autenticado editar os dados de um teste.
+
+    	        O teste deve pertencer a um estudo de um ambiente
+    	        de propriedade do usuário autenticado.
+    	        """
     	)
     	@ApiResponses({
     	    @ApiResponse(responseCode = "204", description = "Teste atualizado com sucesso"),
-    	    @ApiResponse(responseCode = "403", description = "Teste não pertence ao usuário"),
+    	    @ApiResponse(responseCode = "403", description = "O usuário não possui acesso ao teste"),
     	    @ApiResponse(responseCode = "404", description = "Teste não encontrado")
     	})
-	@PutMapping("/editar-teste/{idTeste}")
-	public ResponseEntity<Void> editarTeste(
-	        @Parameter(description = "Identificador do teste", example = "1")
-	        @PathVariable Long idTeste,
-	        @RequestBody @Valid Teste testeAtualizado) {
+    	@PutMapping("/editar-teste/{idTeste}")
+    	public ResponseEntity<Void> editarTeste(
+    	        @Parameter(description = "Identificador do teste", example = "1")
+    	        @PathVariable Long idTeste,
 
-	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
-	            .getContext().getAuthentication().getPrincipal();
-	    Usuario usuario = auth.getUsuario();
+    	        @RequestBody @Valid EditarTesteDTO testeDTO) {
 
-	    Optional<Teste> op = repTeste.findById(idTeste);
-	    if (op.isEmpty()) return ResponseEntity.notFound().build();
+    	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+    	            .getContext().getAuthentication().getPrincipal();
 
-	    Teste teste = op.get();
+    	    Usuario usuario = auth.getUsuario();
 
-	    if (!teste.getEstudo().getAmbiente().getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
-	        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-	    }
+    	    Optional<Teste> opTeste = repTeste.findById(idTeste);
 
-	    teste.transferirTeste(testeAtualizado);
-	    repTeste.save(teste);
+    	    if (opTeste.isEmpty()) {
+    	        return ResponseEntity.notFound().build();
+    	    }
 
-	    return ResponseEntity.noContent().build();
-	}
+    	    Teste teste = opTeste.get();
+
+    	    if (!teste.getEstudo()
+    	            .getAmbiente()
+    	            .getUsuario()
+    	            .getIdUsuario()
+    	            .equals(usuario.getIdUsuario())) {
+
+    	        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    	    }
+
+    	    teste.setNomeTeste(testeDTO.nomeTeste());
+    	    teste.setObservacoesGerais(testeDTO.observacoesGerais());
+    	    teste.setConclusao(testeDTO.conclusao());
+
+    	    repTeste.save(teste);
+
+    	    return ResponseEntity.noContent().build();
+    	}
 
     @Operation(
     	    summary = "Remove um teste",
@@ -130,25 +194,42 @@ public class TesteController {
     	    @ApiResponse(responseCode = "403", description = "Teste não pertence ao usuário"),
     	    @ApiResponse(responseCode = "404", description = "Teste não encontrado")
     	})
-	@DeleteMapping("/remover-teste/{idTeste}")
-	public ResponseEntity<Void> removerTeste(
-	        @Parameter(description = "Identificador do teste", example = "1")
-	        @PathVariable Long idTeste) {
+    @DeleteMapping("/remover-teste/{idTeste}")
+    public ResponseEntity<Void> removerTeste(
+            @Parameter(description = "Identificador do teste", example = "1")
+            @PathVariable Long idTeste) {
 
-	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
-	            .getContext().getAuthentication().getPrincipal();
-	    Usuario usuario = auth.getUsuario();
+        UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
 
-	    Optional<Teste> op = repTeste.findById(idTeste);
-	    if (op.isEmpty()) return ResponseEntity.notFound().build();
+        Usuario usuario = auth.getUsuario();
 
-	    Teste teste = op.get();
+        Optional<Teste> opTeste = repTeste.findById(idTeste);
 
-	    if (!teste.getEstudo().getAmbiente().getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
-	        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-	    }
+        if (opTeste.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
 
-	    repTeste.deleteById(idTeste);
-	    return ResponseEntity.noContent().build();
-	}
+        Teste teste = opTeste.get();
+
+        if (!teste.getEstudo()
+                .getAmbiente()
+                .getUsuario()
+                .getIdUsuario()
+                .equals(usuario.getIdUsuario())) {
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Optional<ConjuntoPropriedadesSnapshot> opSnapshot =
+                repConjuntoPropriedadesSnapshot.findByTesteIdTeste(idTeste);
+
+        if (opSnapshot.isPresent()) {
+            repConjuntoPropriedadesSnapshot.delete(opSnapshot.get());
+        }
+
+        repTeste.delete(teste);
+
+        return ResponseEntity.noContent().build();
+    }
 }

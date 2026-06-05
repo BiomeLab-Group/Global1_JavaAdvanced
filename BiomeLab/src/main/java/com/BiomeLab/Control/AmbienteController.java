@@ -29,6 +29,7 @@ import com.BiomeLab.Model.StatusAtivoEnum;
 import com.BiomeLab.Model.Teste;
 import com.BiomeLab.Model.Usuario;
 import com.BiomeLab.Model.VisibilidadeEnum;
+import com.BiomeLab.Record.AmbienteCardDTO;
 import com.BiomeLab.Record.CriarAmbienteDTO;
 import com.BiomeLab.Record.EditarAmbienteDTO;
 import com.BiomeLab.Repository.AmbienteRepository;
@@ -59,8 +60,6 @@ public class AmbienteController {
     @Autowired
     private AmbienteRepository repAmbiente;
     
-    @Autowired
-    private UsuarioRepository repUsuario;
     
     @Autowired
     private ConjuntoPropriedadesAtualRepository repConjuntoPropsAtual;
@@ -155,7 +154,7 @@ public class AmbienteController {
     	})
 
     @GetMapping("/privados/pesquisa")
-    public ResponseEntity<List<Ambiente>> retornarAmbientesPrivados(
+    public ResponseEntity<List<AmbienteCardDTO>> retornarAmbientesPrivados(
             @RequestParam(name = "substring", defaultValue = "") String substring
     ) {
 
@@ -169,9 +168,13 @@ public class AmbienteController {
                         substring,
                         usuario.getIdUsuario()
                 );
+        
+        List<AmbienteCardDTO> ambientesDTO = ambientes.stream()
+                .map(mapper::toCardDTO)
+                .toList();
 
 
-        return ResponseEntity.ok(ambientes);
+        return ResponseEntity.ok(ambientesDTO);
     }
     
     @Operation(

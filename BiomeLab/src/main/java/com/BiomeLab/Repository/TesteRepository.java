@@ -1,6 +1,7 @@
 package com.BiomeLab.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +21,9 @@ public interface TesteRepository extends JpaRepository<Teste, Long>{
 	        @Param("idAmbiente") Long idAmbiente,
 	        @Param("idUsuario") Long idUsuario
 	);
+
+	public List<Teste> findByEstudoIdEstudo(Long idEstudo);
 	
 
+	public Optional<Teste> findByEstudo_IdEstudoAndDataTerminoTesteIsNull(Long idEstudo);
 }

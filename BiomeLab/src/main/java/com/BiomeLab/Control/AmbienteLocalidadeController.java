@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.BiomeLab.Mapper.AmbienteMapper;
 import com.BiomeLab.Model.Ambiente;
 import com.BiomeLab.Model.Usuario;
+import com.BiomeLab.Record.AmbienteCardDTO;
 import com.BiomeLab.Repository.AmbienteLocalidadeRepository;
 import com.BiomeLab.Security.UsuarioAutenticado;
 
@@ -24,7 +26,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class AmbienteLocalidadeController {
 	
 	@Autowired
-	AmbienteLocalidadeRepository repAmbLoc;
+	private AmbienteLocalidadeRepository repAmbLoc;
+	
+	@Autowired
+	private AmbienteMapper mapper; 
 	
 //	//Desligado
 //	@GetMapping(value="/{idUsuario}/localidades")
@@ -50,18 +55,27 @@ public class AmbienteLocalidadeController {
 		@ApiResponses(value = {
 		    @ApiResponse(responseCode = "200", description = "Lista de ambientes retornada com sucesso")
 		})
-	@GetMapping("/todos/pesquisa")
-	public ResponseEntity<List<Ambiente>> buscarTodosAmbientesPorLocalidadePorSubstringPorUsuario(
-	        @RequestParam(name = "substring", required = false, defaultValue = "") String substring) {
+		@GetMapping("/todos/pesquisa")
+		public ResponseEntity<List<AmbienteCardDTO>> buscarTodosAmbientesPorLocalidadePorSubstringPorUsuario(
+		        @RequestParam(name = "substring", required = false, defaultValue = "") String substring) {
 
-	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
-	            .getContext().getAuthentication().getPrincipal();
-	    Usuario usuario = auth.getUsuario();
+		    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+		            .getContext().getAuthentication().getPrincipal();
 
-	    List<Ambiente> listaAmbientes = repAmbLoc.buscarTodosAmbientesPorSubstring(substring, usuario.getIdUsuario());
+		    Usuario usuario = auth.getUsuario();
 
-	    return ResponseEntity.ok(listaAmbientes);
-	}
+		    List<Ambiente> listaAmbientes =
+		            repAmbLoc.buscarTodosAmbientesPorSubstring(
+		                    substring,
+		                    usuario.getIdUsuario()
+		            );
+
+		    List<AmbienteCardDTO> listaDTO = listaAmbientes.stream()
+		            .map(mapper::toCardDTO)
+		            .toList();
+
+		    return ResponseEntity.ok(listaDTO);
+		}
 	
 //	//Desligado
 //	@GetMapping(value="/localidades")
@@ -82,13 +96,18 @@ public class AmbienteLocalidadeController {
 		@ApiResponses(value = {
 		    @ApiResponse(responseCode = "200", description = "Lista de ambientes públicos retornada com sucesso")
 		})
-	@GetMapping(value="/publicos/pesquisa")
-	public ResponseEntity<List<Ambiente>> buscarAmbientesPublicosPorLocalidadePorSubstring (
-	        @RequestParam(name = "substring", required = false, defaultValue = "") String substring
-	        )
-	{
-	    List<Ambiente> listaAmbientes = repAmbLoc.buscarAmbientesPublicosPorSubstring(substring);
-	    return ResponseEntity.ok(listaAmbientes);
+	@GetMapping("/publicos/pesquisa")
+	public ResponseEntity<List<AmbienteCardDTO>> buscarAmbientesPublicosPorLocalidadePorSubstring(
+	        @RequestParam(name = "substring", required = false, defaultValue = "") String substring) {
+
+	    List<Ambiente> listaAmbientes =
+	            repAmbLoc.buscarAmbientesPublicosPorSubstring(substring);
+
+	    List<AmbienteCardDTO> listaDTO = listaAmbientes.stream()
+	            .map(mapper::toCardDTO)
+	            .toList();
+
+	    return ResponseEntity.ok(listaDTO);
 	}
 	
 
