@@ -35,62 +35,62 @@ public class LocalidadeController {
         return ResponseEntity.ok(localidades);
     }
 
-    @GetMapping(value = "/{idLocalidade}")
-    public ResponseEntity<Localidade> retornarLocalidadePorId(
-            @PathVariable Long idLocalidade) {
+//    @GetMapping(value = "/{idLocalidade}")
+//    public ResponseEntity<Localidade> retornarLocalidadePorId(
+//            @PathVariable Long idLocalidade) {
+//
+//        Optional<Localidade> op = repLocalidade.findById(idLocalidade);
+//
+//        if (op.isPresent()) {
+//            return ResponseEntity.ok(op.get());
+//        }
+//
+//        return ResponseEntity.notFound().build();
+//    }
 
-        Optional<Localidade> op = repLocalidade.findById(idLocalidade);
+//    @PostMapping(value = "/criar-localidade")
+//    public ResponseEntity<Void> criarLocalidade(
+//            @RequestBody @Valid Localidade localidade) {
+//
+//        repLocalidade.save(localidade);
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).build();
+//    }
 
-        if (op.isPresent()) {
-            return ResponseEntity.ok(op.get());
-        }
+//    @PutMapping(value = "/editar-localidade/{idLocalidade}")
+//    public ResponseEntity<Void> editarLocalidade(
+//            @PathVariable Long idLocalidade,
+//            @RequestBody @Valid Localidade localidadeAtualizada) {
+//
+//        Optional<Localidade> op = repLocalidade.findById(idLocalidade);
+//
+//        if (op.isPresent()) {
+//
+//            Localidade localidade = op.get();
+//
+//            localidade.transferirLocalidade(localidadeAtualizada);
+//
+//            repLocalidade.save(localidade);
+//
+//            return ResponseEntity.noContent().build();
+//        }
+//
+//        return ResponseEntity.notFound().build();
+//    }
 
-        return ResponseEntity.notFound().build();
-    }
-
-    @PostMapping(value = "/criar-localidade")
-    public ResponseEntity<Void> criarLocalidade(
-            @RequestBody @Valid Localidade localidade) {
-
-        repLocalidade.save(localidade);
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    @PutMapping(value = "/editar-localidade/{idLocalidade}")
-    public ResponseEntity<Void> editarLocalidade(
-            @PathVariable Long idLocalidade,
-            @RequestBody @Valid Localidade localidadeAtualizada) {
-
-        Optional<Localidade> op = repLocalidade.findById(idLocalidade);
-
-        if (op.isPresent()) {
-
-            Localidade localidade = op.get();
-
-            localidade.transferirLocalidade(localidadeAtualizada);
-
-            repLocalidade.save(localidade);
-
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping(value = "/remover-localidade/{idLocalidade}")
-    public ResponseEntity<Void> removerLocalidade(
-            @PathVariable Long idLocalidade) {
-
-        Optional<Localidade> op = repLocalidade.findById(idLocalidade);
-
-        if (op.isPresent()) {
-
-            repLocalidade.deleteById(idLocalidade);
-
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.notFound().build();
-    }
+//    @DeleteMapping(value = "/remover-localidade/{idLocalidade}")
+//    public ResponseEntity<Void> removerLocalidade(
+//            @PathVariable Long idLocalidade) {
+//
+//        Optional<Localidade> op = repLocalidade.findById(idLocalidade);
+//
+//        if (op.isPresent()) {
+//
+//            repLocalidade.deleteById(idLocalidade);
+//
+//            return ResponseEntity.noContent().build();
+//        }
+//
+//        return ResponseEntity.notFound().build();
+//    }
 }

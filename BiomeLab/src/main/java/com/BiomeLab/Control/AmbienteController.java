@@ -185,6 +185,30 @@ public class AmbienteController {
         return ResponseEntity.ok(dto);
     }
     
+    @Operation(
+    	    summary = "Retorna o conjunto de propriedades atuais do ambiente ativo",
+    	    description = "Utilizado na tela Home"
+    	)
+    	@ApiResponses({
+    	    @ApiResponse(responseCode = "200", description = "Conjunto de propriedades encontrado"),
+    	    @ApiResponse(responseCode = "404", description = "Nenhum ambiente ativo ou conjunto de propriedades encontrado")
+    	})
+    	@GetMapping("/ambiente-ativo")
+    	public ResponseEntity<ConjuntoPropriedadesAtual> retornarConjuntoPorAmbienteAtivo() {
+
+    	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+    	            .getContext().getAuthentication().getPrincipal();
+    	    Usuario usuario = auth.getUsuario();
+
+    	    Optional<Ambiente> op_ambiente = repAmbiente.buscarAmbienteAtivoHome(usuario.getIdUsuario());
+    	    if (op_ambiente.isEmpty()) return ResponseEntity.notFound().build();
+
+    	    Optional<ConjuntoPropriedadesAtual> op_conjunto = repConjuntoPropsAtual
+    	            .retornaPropsAtuaisPorAmbiente(op_ambiente.get().getIdAmbiente());
+
+    	    if (op_conjunto.isPresent()) return ResponseEntity.ok(op_conjunto.get());
+    	    return ResponseEntity.notFound().build();
+    	}
     
     // Busca o ambiente ativo - HOME
     @Operation(

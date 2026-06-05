@@ -62,27 +62,6 @@ public class ConjuntoPropriedadesAtualController {
 //    }
     
     
-    @Operation(summary = "Retorna o conjunto de propriedades atuais de um ambiente do usuário autenticado")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Conjunto de propriedades encontrado"),
-        @ApiResponse(responseCode = "404", description = "Conjunto de propriedades não encontrado")
-    })
-    @GetMapping("/ambiente/{idAmbiente}")
-    public ResponseEntity<ConjuntoPropriedadesAtual> retornarConjuntoPorAmbienteEUsuario(
-            @Parameter(description = "Identificador do ambiente", example = "1")
-            @PathVariable Long idAmbiente) {
-
-        UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
-                .getContext().getAuthentication().getPrincipal();
-        Usuario usuario = auth.getUsuario();
-
-        Optional<ConjuntoPropriedadesAtual> op = repConjuntoPropriedadesAtual
-                .retornaPropsAtuaisPorAmbientePorUsuario(usuario.getIdUsuario(), idAmbiente);
-
-        if (op.isPresent()) return ResponseEntity.ok(op.get());
-        return ResponseEntity.notFound().build();
-    }
-    
     
 //    @PostMapping(value = "/criar")
 //    public ResponseEntity<Void> criar(
