@@ -19,6 +19,7 @@ public class SecurityConfig {
 	public SecurityFilterChain filtrar(HttpSecurity request) throws Exception {
 		
 		request
+			.cors(cors -> {})
 			.csrf(csrf -> csrf.disable())
 			.headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
 			.authorizeHttpRequests(req -> 
