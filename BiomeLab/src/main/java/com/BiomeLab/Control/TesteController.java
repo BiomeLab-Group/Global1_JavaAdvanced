@@ -185,12 +185,19 @@ public class TesteController {
     	    return ResponseEntity.noContent().build();
     	}
 
+    
+    
     @Operation(
     	    summary = "Remove um teste",
-    	    description = "O teste deve pertencer ao usuário autenticado"
+    	    description = """
+    	        Remove um teste pertencente ao usuário autenticado.
+
+    	        Testes ativos (sem data de término) não podem ser removidos.
+    	        """
     	)
     	@ApiResponses({
     	    @ApiResponse(responseCode = "204", description = "Teste removido com sucesso"),
+    	    @ApiResponse(responseCode = "400", description = "O teste ativo não pode ser removido"),
     	    @ApiResponse(responseCode = "403", description = "Teste não pertence ao usuário"),
     	    @ApiResponse(responseCode = "404", description = "Teste não encontrado")
     	})
@@ -219,6 +226,10 @@ public class TesteController {
                 .equals(usuario.getIdUsuario())) {
 
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        if (teste.getDataTerminoTeste() == null) {
+            return ResponseEntity.badRequest().build();
         }
 
         Optional<ConjuntoPropriedadesSnapshot> opSnapshot =

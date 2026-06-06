@@ -11,6 +11,5 @@ public class EstudoDTO {
 
     private String descricaoEstudo;
 
-    private Ambiente ambiente;
 
 }

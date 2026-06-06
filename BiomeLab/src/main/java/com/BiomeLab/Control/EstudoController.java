@@ -100,7 +100,7 @@ public class EstudoController {
     	    @ApiResponse(responseCode = "404", description = "Nenhum ambiente ativo encontrado")
     	})
     	@GetMapping("/ativo")
-    	public ResponseEntity<Estudo> retornarEstudoDoAmbienteAtivoPorUsuario() {
+    	public ResponseEntity<EstudoCardDTO> retornarEstudoDoAmbienteAtivoPorUsuario() {
 
     	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
     	            .getContext().getAuthentication().getPrincipal();
@@ -108,7 +108,9 @@ public class EstudoController {
 
     	    Optional<Estudo> op = repEstudo.buscarEstudoDoAmbienteAtivo(usuario.getIdUsuario());
 
-    	    if (op.isPresent()) return ResponseEntity.ok(op.get());
+    	    EstudoCardDTO estudoCardDTO = mapper.toCardDTO(op.get());
+    	    
+    	    if (op.isPresent()) return ResponseEntity.ok(estudoCardDTO);
     	    return ResponseEntity.notFound().build();
     	}
     

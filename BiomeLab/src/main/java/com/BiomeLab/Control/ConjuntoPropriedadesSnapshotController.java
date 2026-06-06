@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.BiomeLab.DTO.ConjuntoPropriedadesSnapshotDTO;
+import com.BiomeLab.Mapper.ConjuntoPropriedadesSnapshotMapper;
 import com.BiomeLab.Model.ConjuntoPropriedadesSnapshot;
 import com.BiomeLab.Model.Usuario;
 import com.BiomeLab.Repository.ConjuntoPropriedadesSnapshotRepository;
@@ -30,6 +32,9 @@ public class ConjuntoPropriedadesSnapshotController {
 
     @Autowired
     private ConjuntoPropriedadesSnapshotRepository repConjuntoPropriedadesSnapshot;
+    
+    @Autowired
+    private ConjuntoPropriedadesSnapshotMapper mapper;
 
 //    @GetMapping(value = "/todos")
 //    public ResponseEntity<List<ConjuntoPropriedadesSnapshot>> retornarTodos() {
@@ -54,13 +59,19 @@ public class ConjuntoPropriedadesSnapshotController {
 //        return ResponseEntity.notFound().build();
 //    }
 
-    @Operation(summary = "Retorna o snapshot de propriedades de um teste")
+    @Operation(
+    	    summary = "Retorna o snapshot de propriedades de um teste",
+    	    description = """
+    	        Retorna as propriedades ambientais registradas
+    	        no momento em que o teste foi iniciado.
+    	        """
+    	)
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Snapshot encontrado"),
         @ApiResponse(responseCode = "404", description = "Snapshot não encontrado")
     })
     @GetMapping("/teste/{idTeste}/estudo/{idEstudo}/ambiente/{idAmbiente}")
-    public ResponseEntity<ConjuntoPropriedadesSnapshot> retornaPropsSnapshotPorTesteEEstudoEAmbienteEUsuario(
+    public ResponseEntity<ConjuntoPropriedadesSnapshotDTO> retornarSnapshotPorTeste(
             @Parameter(description = "Identificador do teste", example = "1") @PathVariable Long idTeste,
             @Parameter(description = "Identificador do estudo", example = "1") @PathVariable Long idEstudo,
             @Parameter(description = "Identificador do ambiente", example = "1") @PathVariable Long idAmbiente) {
@@ -72,8 +83,11 @@ public class ConjuntoPropriedadesSnapshotController {
         Optional<ConjuntoPropriedadesSnapshot> op = repConjuntoPropriedadesSnapshot
                 .retornaPropsSnapshotPorTesteEEstudoEAmbienteEUsuario(idTeste, idEstudo, idAmbiente, usuario.getIdUsuario());
 
-        if (op.isPresent()) return ResponseEntity.ok(op.get());
-        return ResponseEntity.notFound().build();
+        if (op.isEmpty()) return ResponseEntity.notFound().build();
+        
+        ConjuntoPropriedadesSnapshotDTO snapshotDTO= mapper.toDTO(op.get());
+        
+        return ResponseEntity.ok(snapshotDTO);
     }
     
     

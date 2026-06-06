@@ -19,6 +19,4 @@ public class TesteDTO {
 
     private String conclusao;
 
-    private Estudo estudo;
-
 }

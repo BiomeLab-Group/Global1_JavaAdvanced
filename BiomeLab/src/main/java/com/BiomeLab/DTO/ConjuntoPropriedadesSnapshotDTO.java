@@ -18,7 +18,5 @@ public class ConjuntoPropriedadesSnapshotDTO {
     private BigDecimal gravidade;
 
     private BigDecimal pressaoAtmosferica;
-
-    private Teste teste;
 	
 }

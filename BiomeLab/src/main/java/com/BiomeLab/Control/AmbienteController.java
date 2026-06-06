@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.BiomeLab.DTO.AmbienteDTO;
+import com.BiomeLab.DTO.ConjuntoPropriedadesAtualDTO;
 import com.BiomeLab.Mapper.AmbienteMapper;
+import com.BiomeLab.Mapper.ConjuntoPropriedadesAtualMapper;
 import com.BiomeLab.Model.Ambiente;
 import com.BiomeLab.Model.ConjuntoPropriedadesAtual;
 import com.BiomeLab.Model.ConjuntoPropriedadesSnapshot;
@@ -37,7 +39,6 @@ import com.BiomeLab.Repository.ConjuntoPropriedadesAtualRepository;
 import com.BiomeLab.Repository.ConjuntoPropriedadesSnapshotRepository;
 import com.BiomeLab.Repository.EstudoRepository;
 import com.BiomeLab.Repository.TesteRepository;
-import com.BiomeLab.Repository.UsuarioRepository;
 import com.BiomeLab.Security.UsuarioAutenticado;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -76,6 +77,9 @@ public class AmbienteController {
     
     @Autowired
     private AmbienteMapper mapper;
+    
+    @Autowired
+    private ConjuntoPropriedadesAtualMapper propsMapper;
     
     // usado para apenas teste
     @Operation(
@@ -128,8 +132,10 @@ public class AmbienteController {
 
         Usuario usuario = auth.getUsuario();
 
+        // Caso ambiente  seja privado
         if (ambiente.getVisibilidade() == VisibilidadeEnum.R) {
 
+        	//verifica se o ambiente é d usuario autenticado
             if (!ambiente.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
@@ -178,54 +184,71 @@ public class AmbienteController {
     }
     
     @Operation(
-    	    summary = "Retorna o conjunto de propriedades atuais do ambiente ativo",
-    	    description = "Utilizado na tela Home"
-    	)
-    	@ApiResponses({
-    	    @ApiResponse(responseCode = "200", description = "Conjunto de propriedades encontrado"),
-    	    @ApiResponse(responseCode = "404", description = "Nenhum ambiente ativo ou conjunto de propriedades encontrado")
-    	})
-    	@GetMapping("/ambiente-ativo")
-    	public ResponseEntity<ConjuntoPropriedadesAtual> retornarConjuntoPorAmbienteAtivo() {
-
-    	    UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
-    	            .getContext().getAuthentication().getPrincipal();
-    	    Usuario usuario = auth.getUsuario();
-
-    	    Optional<Ambiente> op_ambiente = repAmbiente.buscarAmbienteAtivoHome(usuario.getIdUsuario());
-    	    if (op_ambiente.isEmpty()) return ResponseEntity.notFound().build();
-
-    	    Optional<ConjuntoPropriedadesAtual> op_conjunto = repConjuntoPropsAtual
-    	            .retornaPropsAtuaisPorAmbiente(op_ambiente.get().getIdAmbiente());
-
-    	    if (op_conjunto.isPresent()) return ResponseEntity.ok(op_conjunto.get());
-    	    return ResponseEntity.notFound().build();
-    	}
-    
-    
-    
-    // Busca o ambiente ativo - HOME
-    @Operation(
-    	    summary = "Retorna o ambiente ativo do usuário",
-    	    description = "Utilizado pela tela Home do aplicativo"
-    	)
-    @ApiResponses(value = {
-    	    @ApiResponse(responseCode = "200", description = "Ambiente ativo encontrado"),
-    	    @ApiResponse(responseCode = "404", description = "Usuário não possui ambiente ativo")
-    	})
-    @GetMapping("/ativo")
-    public ResponseEntity<Ambiente> buscarAmbienteAtivo() {
+            summary = "Retorna o conjunto de propriedades atuais do ambiente ativo",
+            description = "Utilizado na tela Home"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Conjunto de propriedades encontrado"),
+            @ApiResponse(responseCode = "404", description = "Nenhum ambiente ativo ou conjunto de propriedades encontrado")
+    })
+    @GetMapping("/ambiente-ativo")
+    public ResponseEntity<ConjuntoPropriedadesAtualDTO> retornarConjuntoPorAmbienteAtivo() {
 
         UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
                 .getContext().getAuthentication().getPrincipal();
+
         Usuario usuario = auth.getUsuario();
 
-        Optional<Ambiente> op = repAmbiente.buscarAmbienteAtivoHome(usuario.getIdUsuario());
+        Optional<Ambiente> opAmbiente =
+                repAmbiente.buscarAmbienteAtivoHome(usuario.getIdUsuario());
 
-        if (op.isPresent()) {
-            return ResponseEntity.ok(op.get());
+        if (opAmbiente.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+
+        Optional<ConjuntoPropriedadesAtual> opConjunto =
+                repConjuntoPropsAtual.retornaPropsAtuaisPorAmbiente(
+                        opAmbiente.get().getIdAmbiente());
+
+        if (opConjunto.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ConjuntoPropriedadesAtualDTO dto =
+                propsMapper.toDTO(opConjunto.get());
+
+        return ResponseEntity.ok(dto);
+    }
+    
+    
+ 
+ // Busca o ambiente ativo - HOME
+    @Operation(
+            summary = "Retorna o ambiente ativo do usuário",
+            description = "Utilizado pela tela Home do aplicativo"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ambiente ativo encontrado"),
+            @ApiResponse(responseCode = "404", description = "Usuário não possui ambiente ativo")
+    })
+    @GetMapping("/ativo")
+    public ResponseEntity<AmbienteCardDTO> buscarAmbienteAtivo() {
+
+        UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
+
+        Usuario usuario = auth.getUsuario();
+
+        Optional<Ambiente> op =
+                repAmbiente.buscarAmbienteAtivoHome(usuario.getIdUsuario());
+
+        if (op.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        AmbienteCardDTO dto = mapper.toCardDTO(op.get());
+
+        return ResponseEntity.ok(dto);
     }
     
     // NA ficha de ambiente inativo
@@ -330,7 +353,7 @@ public class AmbienteController {
     @Tag(name = "Teste em Cloud")
     @Transactional
     @PostMapping("/criar-ambiente")
-    public ResponseEntity<Long> criarAmbienteValido(@RequestBody @Valid CriarAmbienteDTO ambienteDTO) {
+    public ResponseEntity<AmbienteCardDTO> criarAmbienteValido(@RequestBody @Valid CriarAmbienteDTO ambienteDTO) {
 
         UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
                 .getContext().getAuthentication().getPrincipal();
@@ -382,8 +405,10 @@ public class AmbienteController {
                 .build();
 
         repSnapshot.save(conjuntoPropriedadesSnapshot);
+        
+        AmbienteCardDTO ambienteCardDTO = mapper.toCardDTO(ambienteSalvo);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(ambienteSalvo.getIdAmbiente());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ambienteCardDTO);
     }
     
     
@@ -413,7 +438,7 @@ public class AmbienteController {
     	})
     @Transactional
     @PostMapping("/baixar-ambiente-publico/{idAmbiente}")
-    public ResponseEntity<Long> baixarAmbientePublico(@PathVariable Long idAmbiente) {
+    public ResponseEntity<AmbienteCardDTO> baixarAmbientePublico(@PathVariable Long idAmbiente) {
 
         UsuarioAutenticado auth = (UsuarioAutenticado) SecurityContextHolder
                 .getContext().getAuthentication().getPrincipal();
@@ -473,8 +498,10 @@ public class AmbienteController {
                 .teste(testeSalvo)
                 .build();
         repSnapshot.save(snapshot);
+        
+        AmbienteCardDTO ambienteCardDTO = mapper.toCardDTO(privadoSalvo);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(privadoSalvo.getIdAmbiente());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ambienteCardDTO);
     }
     
     //Ficha Ambiente Privado -> EDITAR NOME

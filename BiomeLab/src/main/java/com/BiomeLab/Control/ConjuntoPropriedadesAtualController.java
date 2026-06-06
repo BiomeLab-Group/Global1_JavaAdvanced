@@ -1,6 +1,7 @@
 package com.BiomeLab.Control;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -89,18 +90,22 @@ public class ConjuntoPropriedadesAtualController {
 
     
     @Operation(
-    	    summary = "Altera as condições do ambiente ativo",
+    	    summary = "Inicia um novo teste com novas condições ambientais",
     	    description = """
-    	        Encerra o teste atual, atualiza as propriedades do ambiente
-    	        e inicia um novo teste com snapshot das novas condições.
-    	        O ambiente deve estar ativo e pertencer ao usuário autenticado.
+    	        Encerra o teste ativo do ambiente,
+    	        atualiza as propriedades atuais do ambiente,
+    	        cria um novo teste e registra um snapshot
+    	        com as condições informadas.
+
+    	        O ambiente deve pertencer ao usuário autenticado
+    	        e estar com status ATIVO.
     	        """
     	)
     	@ApiResponses({
-    	    @ApiResponse(responseCode = "204", description = "Condições alteradas com sucesso"),
-    	    @ApiResponse(responseCode = "400", description = "Ambiente não está ativo"),
-    	    @ApiResponse(responseCode = "403", description = "Ambiente não pertence ao usuário"),
-    	    @ApiResponse(responseCode = "404", description = "Ambiente, estudo, teste ou propriedades não encontrados")
+    	    @ApiResponse(responseCode = "204", description = "Novo teste iniciado com sucesso"),
+    	    @ApiResponse(responseCode = "400", description = "O ambiente não está ativo"),
+    	    @ApiResponse(responseCode = "403", description = "O ambiente não pertence ao usuário autenticado"),
+    	    @ApiResponse(responseCode = "404", description = "Ambiente, estudo, teste ativo ou conjunto de propriedades não encontrado")
     	})
     @PostMapping("/ambiente/{idAmbiente}/alterar-condicoes")
     @Transactional
@@ -114,8 +119,13 @@ public class ConjuntoPropriedadesAtualController {
         Usuario usuario = auth.getUsuario();
 
         // validar ambiente
-        Ambiente ambiente = repAmbiente.findById(idAmbiente)
-                .orElseThrow();
+        Optional<Ambiente> opAmbiente = repAmbiente.findById(idAmbiente);
+
+        if(opAmbiente.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Ambiente ambiente = opAmbiente.get();
         
         if (!ambiente.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -125,27 +135,42 @@ public class ConjuntoPropriedadesAtualController {
             return ResponseEntity.badRequest().build();
         }
 
-        // buscar estudo do ambiente
-        Estudo estudo = repEstudo
+     // buscar estudo do ambiente
+        Optional<Estudo> opEstudo = repEstudo
                 .retornaEstudoPorAmbientePorUsuario(
                         usuario.getIdUsuario(),
-                        idAmbiente)
-                .orElseThrow();
+                        idAmbiente);
 
-        // buscar teste ativo
-        Teste testeAtual = repTeste
-                .findByEstudo_IdEstudoAndDataTerminoTesteIsNull(estudo.getIdEstudo())
-                .orElseThrow();
+        if (opEstudo.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Estudo estudo = opEstudo.get();
+
+     // buscar teste ativo
+        Optional<Teste> opTeste = repTeste
+                .findByEstudo_IdEstudoAndDataTerminoTesteIsNull(estudo.getIdEstudo());
+
+        if (opTeste.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Teste testeAtual = opTeste.get();
 
         // encerrar teste atual
         testeAtual.setDataTerminoTeste(LocalDate.now());
         repTeste.save(testeAtual);
 
         // atualizar propriedades atuais
-        ConjuntoPropriedadesAtual props =
+        Optional<ConjuntoPropriedadesAtual> opProps =
                 repConjuntoPropriedadesAtual
-                        .retornaPropsAtuaisPorAmbiente(idAmbiente)
-                        .orElseThrow();
+                        .retornaPropsAtuaisPorAmbiente(idAmbiente);
+
+        if (opProps.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ConjuntoPropriedadesAtual props = opProps.get();
 
         props.setTemperatura(dto.temperatura());
         props.setUmidade(dto.umidade());
