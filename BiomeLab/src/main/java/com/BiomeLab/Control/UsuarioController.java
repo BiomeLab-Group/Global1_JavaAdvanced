@@ -106,7 +106,7 @@ public class UsuarioController {
 	}
 	
 	// O usuario Pode apenas modificar nome e email 
-	@Operation(summary = "Edita nome e email do usuário autenticado")
+	@Operation(summary = "Edita nome do usuário autenticado")
 	@ApiResponses({
 	    @ApiResponse(responseCode = "204", description = "Usuário atualizado com sucesso"),
 	    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
