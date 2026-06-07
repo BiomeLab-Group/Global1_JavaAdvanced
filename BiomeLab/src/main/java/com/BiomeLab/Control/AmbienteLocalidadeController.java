@@ -20,9 +20,13 @@ import com.BiomeLab.Security.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping(value = "/ambiente")
+@Tag(
+		name = "Pesquisa de Ambientes ",
+		description = "Operações relacionadas a listagem de ambientes")
 public class AmbienteLocalidadeController {
 	
 	@Autowired

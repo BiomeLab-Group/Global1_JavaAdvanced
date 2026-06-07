@@ -24,10 +24,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(value = "/conjunto-propriedades-snapshot")
+@Tag(
+		name = "Conjunto de Propriedades Atuais",
+		description = "Operações relacionadas ao Conjunto de Propriedades registradas em testes"
+		)
 public class ConjuntoPropriedadesSnapshotController {
 
     @Autowired
