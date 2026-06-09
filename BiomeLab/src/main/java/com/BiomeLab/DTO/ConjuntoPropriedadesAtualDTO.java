@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 
 import com.BiomeLab.Model.Ambiente;
 
+import lombok.Data;
+
+@Data
 public class ConjuntoPropriedadesAtualDTO {
 	
 	private BigDecimal temperatura;
