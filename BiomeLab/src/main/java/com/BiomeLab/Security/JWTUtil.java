@@ -17,7 +17,7 @@ public class JWTUtil {
 	private final SecretKey CHAVE = Jwts.SIG.HS256.key().build();
 	
 	//geração de token
-	public String gerarToken(String username, Integer duracao) {
+	public String gerarToken(String username, Integer duracaoDias) {
 		
 		Date data_atual = new Date();
 		
@@ -25,7 +25,7 @@ public class JWTUtil {
 								 .subject(username)
 								 .issuedAt(data_atual)
 								 .expiration(
-								  new Date(data_atual.getTime() + (1000 * 60 * 60 * duracao)))
+								  new Date(data_atual.getTime() + (1000 * 60 * 60 * 24 * 30)))
 								 .signWith(CHAVE);
 								 
 		return builder.compact();
