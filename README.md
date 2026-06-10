@@ -77,6 +77,10 @@ http://localhost:8080/swagger-ui/index.html
 
 https://youtu.be/QMMOd2L1nCA
 
+## Vídeo Pitch
+
+https://www.youtube.com/watch?v=FqZvKmZRrt8
+
 ---
 
 # 📚 Principais Funcionalidades
