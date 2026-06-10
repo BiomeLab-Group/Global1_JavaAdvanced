@@ -69,17 +69,13 @@ Recursos complementares:
 
 [Repositório GitHub](https://github.com/BiomeLab-Group/Global1_JavaAdvanced)
 
-## Deploy da API
-
-[INSERIR LINK]
-
 ## Swagger / OpenAPI
 
-http://IP_DA_VM:PORT/swagger-ui/index.html
+http://localhost:8080/swagger-ui/index.html
 
 ## Vídeo de Apresentação
 
-[INSERIR LINK]
+https://youtu.be/QMMOd2L1nCA
 
 ---
 
@@ -185,7 +181,7 @@ mvn spring-boot:run
 A documentação Swagger pode ser acessada em:
 
 ```text
-http://IP_DA_VM:PORT/swagger-ui/index.html
+http://localhost:8080/swagger-ui/index.html
 ```
 
 ---
